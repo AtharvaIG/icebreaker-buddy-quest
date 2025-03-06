@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import NumberSelector from './NumberSelector';
 import { Room, Player, getRandomQuestion } from '@/lib/gameUtils';
-import { ArrowLeft, ArrowRight, CheckCircle, Copy, Crown, MessageCircle, RefreshCw, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RefreshCw, Crown, MessageCircle, Copy, Users } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 interface GameScreenProps {
@@ -17,9 +17,7 @@ interface GameScreenProps {
 
 const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, category, onLeaveRoom }) => {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [question, setQuestion] = useState(getRandomQuestion(category));
-  const [revealAnswers, setRevealAnswers] = useState(false);
   const [players, setPlayers] = useState<Player[]>([
     { ...currentPlayer, isHost: true },
     // For demo purposes, add some fake players
@@ -28,23 +26,25 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
     { id: 'player4', name: 'Jordan', answer: 9, isHost: false },
   ]);
 
-  const handleSubmitAnswer = () => {
+  const handleChooseNumber = () => {
     if (selectedNumber === null) return;
     
-    setIsSubmitted(true);
-    
-    // Update current player's answer
-    setPlayers(prev => 
-      prev.map(p => 
-        p.id === currentPlayer.id 
-          ? { ...p, answer: selectedNumber } 
-          : p
-      )
-    );
+    // Get a new random question
+    setQuestion(getRandomQuestion(category));
     
     toast({
-      title: "Answer Submitted",
-      description: `You selected ${selectedNumber}`,
+      title: "New Question Selected",
+      description: `You chose number ${selectedNumber}`,
+    });
+  };
+
+  const handleNextTurn = () => {
+    setQuestion(getRandomQuestion(category));
+    setSelectedNumber(null);
+    
+    toast({
+      title: "Next Turn",
+      description: "New question loaded",
     });
   };
 
@@ -56,25 +56,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
     });
   };
 
-  const handleNextQuestion = () => {
-    setQuestion(getRandomQuestion(category));
-    setSelectedNumber(null);
-    setIsSubmitted(false);
-    setRevealAnswers(false);
-    
-    // Reset all players' answers
-    setPlayers(prev => 
-      prev.map(p => ({ ...p, answer: undefined }))
-    );
-  };
-
   const handleChooseAnotherNumber = () => {
     setSelectedNumber(null);
-    setIsSubmitted(false);
-  };
-
-  const handleRevealAnswers = () => {
-    setRevealAnswers(true);
   };
 
   return (
@@ -127,101 +110,69 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
       </Card>
       
       <div className="mb-8">
-        {!isSubmitted ? (
-          <>
-            <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
-              Select your answer:
-            </h3>
-            <NumberSelector 
-              onSelect={setSelectedNumber} 
-              selectedNumber={selectedNumber} 
-            />
-            <div className="flex justify-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              <Button 
-                onClick={handleSubmitAnswer}
-                disabled={selectedNumber === null}
-                className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
-                size="lg"
-              >
-                <CheckCircle className="h-5 w-5 mr-1" />
-                Submit Answer
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-6 animate-fade-in-up">
-            <div className="text-center">
-              <Badge className="bg-icebreaker text-white px-3 py-1.5 text-sm">
-                Your answer: {selectedNumber}
-              </Badge>
-              
-              <p className="mt-3 text-muted-foreground">
-                Waiting for other players to answer...
-              </p>
-            </div>
-            
-            <div className="flex justify-center gap-3 mt-6">
-              {!revealAnswers ? (
-                <>
-                  <Button 
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                    onClick={handleChooseAnotherNumber}
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Choose Another Number
-                  </Button>
-                  
-                  {currentPlayer.isHost && (
-                    <Button 
-                      variant="outline"
-                      className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300"
-                      onClick={handleRevealAnswers}
-                    >
-                      Reveal All Answers
-                    </Button>
-                  )}
-                </>
-              ) : (
-                currentPlayer.isHost && (
-                  <Button 
-                    className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
-                    onClick={handleNextQuestion}
-                  >
-                    <ArrowRight className="h-4 w-4 mr-1" />
-                    Next Question
-                  </Button>
-                )
-              )}
-            </div>
+        <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
+          Select a number:
+        </h3>
+        <NumberSelector 
+          onSelect={setSelectedNumber} 
+          selectedNumber={selectedNumber} 
+        />
+        
+        <div className="flex justify-center gap-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          {selectedNumber !== null && (
+            <Button 
+              onClick={handleChooseNumber}
+              className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
+              size="lg"
+            >
+              <RefreshCw className="h-5 w-5 mr-1" />
+              Choose This Number
+            </Button>
+          )}
+          
+          {currentPlayer.isHost && (
+            <Button 
+              variant="outline"
+              className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
+              onClick={handleNextTurn}
+              size="lg"
+            >
+              <ArrowRight className="h-5 w-5 mr-1" />
+              Next Turn
+            </Button>
+          )}
+        </div>
+        
+        {selectedNumber !== null && (
+          <div className="flex justify-center mt-3">
+            <Button 
+              variant="ghost"
+              className="text-gray-500 hover:text-icebreaker"
+              onClick={handleChooseAnotherNumber}
+            >
+              Choose Another Number
+            </Button>
           </div>
         )}
       </div>
       
-      {revealAnswers && (
-        <div className="animate-fade-in-up">
-          <h3 className="text-center text-lg font-medium mb-4">Everyone's Answers:</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-            {players.map(player => (
-              <Card key={player.id} className={`glass-card overflow-hidden ${player.id === currentPlayer.id ? 'ring-2 ring-icebreaker' : ''}`}>
-                <CardHeader className="py-3 px-4">
-                  <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
-                    {player.name}
-                    {player.isHost && (
-                      <Crown className="h-4 w-4 text-amber-500 ml-1" />
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="py-4 text-center">
-                  <span className="text-2xl font-semibold text-icebreaker-dark">
-                    {player.answer || '?'}
-                  </span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="animate-fade-in-up">
+        <h3 className="text-center text-lg font-medium mb-4">Players:</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          {players.map(player => (
+            <Card key={player.id} className={`glass-card overflow-hidden ${player.id === currentPlayer.id ? 'ring-2 ring-icebreaker' : ''}`}>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
+                  {player.name}
+                  {player.isHost && (
+                    <Crown className="h-4 w-4 text-amber-500 ml-1" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };
