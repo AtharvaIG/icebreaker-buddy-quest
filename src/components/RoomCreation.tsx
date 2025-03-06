@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateRoomCode, generatePlayerId, getRandomQuestion } from '@/lib/gameUtils';
-import { ArrowRight, Users } from 'lucide-react';
+import { generateRoomCode, generatePlayerId } from '@/lib/gameUtils';
+import { ArrowRight, Plus } from 'lucide-react';
 
 interface RoomCreationProps {
   onRoomCreated: (roomCode: string, playerName: string, playerId: string) => void;
@@ -33,12 +33,12 @@ const RoomCreation: React.FC<RoomCreationProps> = ({ onRoomCreated }) => {
   return (
     <Card className="w-full max-w-md glass-card animate-fade-in-up">
       <CardHeader>
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-icebreaker-light mb-4">
-          <Users className="h-6 w-6 text-icebreaker-dark" />
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-4">
+          <Plus className="h-5 w-5 text-icebreaker-dark" />
         </div>
-        <CardTitle className="text-center text-2xl">Create a Room</CardTitle>
+        <CardTitle className="text-center text-xl">Create a Room</CardTitle>
         <CardDescription className="text-center">
-          Start a new icebreaker session with friends
+          Start a new icebreaker session
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleCreateRoom}>

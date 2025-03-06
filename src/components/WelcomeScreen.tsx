@@ -37,7 +37,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
           </span>
         </h1>
         <p className="text-xl text-gray-600 max-w-md mx-auto">
-          A fun way to get to know your friends, colleagues, or classmates better
+          A fun way to get to know each other better
         </p>
       </div>
       

@@ -51,12 +51,12 @@ const RoomJoin: React.FC<RoomJoinProps> = ({ onRoomJoined }) => {
   return (
     <Card className="w-full max-w-md glass-card animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
       <CardHeader>
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-icebreaker-light mb-4">
-          <LogIn className="h-6 w-6 text-icebreaker-dark" />
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-4">
+          <LogIn className="h-5 w-5 text-icebreaker-dark" />
         </div>
-        <CardTitle className="text-center text-2xl">Join a Room</CardTitle>
+        <CardTitle className="text-center text-xl">Join a Room</CardTitle>
         <CardDescription className="text-center">
-          Enter a room code to join an existing session
+          Enter a room code to join a session
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleJoinRoom}>
