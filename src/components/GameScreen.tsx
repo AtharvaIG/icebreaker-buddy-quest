@@ -111,11 +111,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
       
       <div className="mb-8">
         <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
-          Select a number:
+          Enter a number:
         </h3>
         <NumberSelector 
           onSelect={setSelectedNumber} 
           selectedNumber={selectedNumber} 
+          min={1}
+          max={100}
         />
         
         <div className="flex justify-center gap-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>

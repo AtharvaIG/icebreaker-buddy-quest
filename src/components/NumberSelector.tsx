@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface NumberSelectorProps {
@@ -13,27 +15,57 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
   onSelect, 
   selectedNumber, 
   min = 1, 
-  max = 10 
+  max = 100 
 }) => {
-  const numbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+  const [inputValue, setInputValue] = useState<string>(selectedNumber?.toString() || '');
   
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only positive numbers
+    if (/^\d*$/.test(value)) {
+      setInputValue(value);
+    }
+  };
+  
+  const handleSubmit = () => {
+    const numValue = parseInt(inputValue, 10);
+    if (!isNaN(numValue) && numValue >= min && numValue <= max) {
+      onSelect(numValue);
+    }
+  };
+
   return (
-    <div className="flex flex-wrap justify-center gap-3 mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-      {numbers.map((number) => (
-        <button
-          key={number}
-          onClick={() => onSelect(number)}
-          className={cn(
-            "number-button",
-            "bg-white hover:bg-icebreaker hover:text-white border border-gray-200",
-            "shadow-sm hover:shadow transition-all duration-300",
-            selectedNumber === number ? "selected bg-icebreaker text-white scale-110" : ""
-          )}
-          aria-label={`Select number ${number}`}
+    <div className="flex flex-col items-center gap-4 mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+      <div className="flex w-full max-w-xs gap-2">
+        <Input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Enter a number"
+          className="text-center text-lg"
+          aria-label="Enter a number"
+          min={min}
+          max={max}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSubmit();
+            }
+          }}
+        />
+        <Button 
+          onClick={handleSubmit}
+          className="bg-icebreaker hover:bg-icebreaker-dark"
+          disabled={!inputValue}
         >
-          {number}
-        </button>
-      ))}
+          Select
+        </Button>
+      </div>
+      
+      {selectedNumber !== null && (
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-icebreaker text-white text-2xl font-bold mt-2">
+          {selectedNumber}
+        </div>
+      )}
     </div>
   );
 };
