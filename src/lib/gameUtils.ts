@@ -69,6 +69,38 @@ export const questionsMap = {
     "From 1-10, how likely are you to binge-watch an entire series in one sitting?",
     "On a scale of 1-10, how important is social media in your daily life?",
   ],
+  deep: [
+    "On a scale of 1-10, how much does your personality change when you're around different people?",
+    "Rate from 1-10 how stressful your life is right now",
+    "From 1-10, how often do you feel alone even when you're with others?",
+    "On a scale of 1-10, how much do you believe in love at first sight?",
+    "From 1-10, how difficult do you find it to apologize to someone?",
+    "Rate from 1-10 how much you believe in soulmates",
+  ],
+  fun: [
+    "On a scale of 1-10, how likely would you be to open your own business?",
+    "Rate from 1-10 how gullible you consider yourself",
+    "From 1-10, how spicy can you handle your food?",
+    "On a scale of 1-10, how likely are you to wait in line for a week for something you really want?",
+    "Rate from 1-10 how much you enjoy roller coasters",
+    "From 1-10, how lucky do you consider yourself?",
+  ],
+  friendship: [
+    "On a scale of 1-10, how much do you value having one best friend versus many good friends?",
+    "Rate from 1-10 how important friendships are in your life",
+    "From 1-10, how difficult do you find making new friends?",
+    "On a scale of 1-10, how good are you at maintaining long-distance friendships?",
+    "Rate from 1-10 how good you are at resolving conflicts with friends",
+    "From 1-10, how much do you share your personal life with friends?",
+  ],
+  hypothetical: [
+    "On a scale of 1-10, how well would you survive a zombie apocalypse?",
+    "Rate from 1-10 how good of a ghost you think you'd be",
+    "From 1-10, how well would you rule a country if you were suddenly president?",
+    "On a scale of 1-10, how well would you fare if you had to live in another time period?",
+    "Rate from 1-10 how adaptable you'd be if you suddenly had to move to another country",
+    "From 1-10, how successful do you think you'd be as a professional athlete?",
+  ]
 };
 
 // Default fallback questions

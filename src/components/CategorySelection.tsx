@@ -3,7 +3,21 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Book, BriefcaseBusiness, Coffee, Compass, Heart, Home, Library, Palette, Pizza, Users } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Book, 
+  BriefcaseBusiness, 
+  Coffee, 
+  Compass, 
+  Heart, 
+  HelpCircle, 
+  Lightbulb, 
+  MessageCircle, 
+  Palette, 
+  Pizza, 
+  Smile, 
+  Users 
+} from 'lucide-react';
 
 interface CategorySelectionProps {
   onCategorySelect: (category: string) => void;
@@ -17,6 +31,10 @@ const categories = [
   { id: 'food', name: 'Food & Drinks', icon: <Pizza className="h-5 w-5" />, description: 'All about culinary tastes and preferences' },
   { id: 'hobbies', name: 'Hobbies', icon: <Palette className="h-5 w-5" />, description: 'Explore interests and pastimes' },
   { id: 'travel', name: 'Travel', icon: <Compass className="h-5 w-5" />, description: 'Adventures and destination preferences' },
+  { id: 'deep', name: 'Deep Questions', icon: <MessageCircle className="h-5 w-5" />, description: 'Thought-provoking questions' },
+  { id: 'fun', name: 'Fun Questions', icon: <Smile className="h-5 w-5" />, description: 'Lighthearted and entertaining' },
+  { id: 'friendship', name: 'Friendship', icon: <Users className="h-5 w-5" />, description: 'Questions about relationships' },
+  { id: 'hypothetical', name: 'Hypothetical', icon: <Lightbulb className="h-5 w-5" />, description: '"What if" scenarios' },
   { id: 'random', name: 'Random Mix', icon: <Coffee className="h-5 w-5" />, description: 'A little bit of everything' },
 ];
 

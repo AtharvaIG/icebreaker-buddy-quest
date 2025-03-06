@@ -30,15 +30,25 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
 
   return (
     <div className="page-container">
-      <div className="text-center mb-10 animate-fade-in">
+      <div className="text-center mb-8 animate-fade-in">
         <h1 className="text-5xl font-bold mb-4 tracking-tight">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-icebreaker to-icebreaker-dark">
             Icebreaker
           </span>
         </h1>
-        <p className="text-xl text-gray-600 max-w-md mx-auto">
+        <p className="text-xl text-gray-600 max-w-md mx-auto mb-6">
           A fun way to get to know each other better
         </p>
+        
+        <div className="max-w-md mx-auto bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-4 mb-8">
+          <h2 className="text-lg font-medium mb-2">How to Play:</h2>
+          <ol className="text-left text-gray-700 space-y-2 pl-5 list-decimal">
+            <li>Create a room or join with a code</li>
+            <li>Select a question category</li>
+            <li>Answer questions by rating them on a scale of 1-10</li>
+            <li>See how everyone answered and discuss!</li>
+          </ol>
+        </div>
       </div>
       
       <Tabs defaultValue="join" className="w-full max-w-md animate-fade-in-up">
