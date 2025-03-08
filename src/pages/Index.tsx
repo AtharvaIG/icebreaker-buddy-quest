@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import GameScreen from '@/components/GameScreen';
 import CategorySelection from '@/components/CategorySelection';
 import { Player, useLocalStorage } from '@/lib/gameUtils';
+import socketService from '@/lib/socketService';
 
 const Index = () => {
   // Store game state in localStorage to persist across refreshes
@@ -21,7 +22,34 @@ const Index = () => {
     selectedCategory: null,
   });
 
-  const handleGameStart = (roomCode: string, player: Player) => {
+  useEffect(() => {
+    // Initialize socket connection on page load
+    socketService.connect();
+
+    // If we're already in a game, rejoin it
+    if (gameState.inGame && gameState.roomCode && gameState.player) {
+      socketService.joinRoom(
+        gameState.roomCode,
+        gameState.player.id,
+        gameState.player.name
+      );
+    }
+
+    // Cleanup on component unmount
+    return () => {
+      if (!gameState.inGame) {
+        socketService.disconnect();
+      }
+    };
+  }, []);
+
+  const handleGameStart = (roomCode: string, playerName: string, playerId: string) => {
+    const player: Player = {
+      id: playerId,
+      name: playerName,
+      isHost: false, // This will be updated by the server
+    };
+
     setGameState({
       ...gameState,
       inCategorySelection: true,
@@ -31,15 +59,26 @@ const Index = () => {
   };
 
   const handleCategorySelect = (category: string) => {
-    setGameState({
-      ...gameState,
-      inGame: true,
-      inCategorySelection: false,
-      selectedCategory: category,
-    });
+    if (gameState.roomCode && gameState.player) {
+      // Send category selection to the server
+      socketService.selectCategory(gameState.roomCode, gameState.player.id, category);
+      
+      // Update game state
+      setGameState({
+        ...gameState,
+        inGame: true,
+        inCategorySelection: false,
+        selectedCategory: category,
+      });
+    }
   };
 
   const handleLeaveRoom = () => {
+    if (gameState.roomCode && gameState.player) {
+      socketService.leaveRoom(gameState.roomCode, gameState.player.id);
+      socketService.disconnect();
+    }
+    
     setGameState({
       inGame: false,
       inCategorySelection: false,

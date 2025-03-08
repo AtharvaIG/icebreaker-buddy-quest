@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import NumberSelector from './NumberSelector';
-import { Room, Player, getRandomQuestion } from '@/lib/gameUtils';
+import { Player } from '@/lib/gameUtils';
 import { ArrowLeft, ArrowRight, RefreshCw, Crown, MessageCircle, Copy, Users } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import socketService from '@/lib/socketService';
 
 interface GameScreenProps {
   roomCode: string;
@@ -17,35 +18,104 @@ interface GameScreenProps {
 
 const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, category, onLeaveRoom }) => {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const [question, setQuestion] = useState(getRandomQuestion(category));
-  const [players, setPlayers] = useState<Player[]>([
-    { ...currentPlayer, isHost: true },
-    // For demo purposes, add some fake players
-    { id: 'player2', name: 'Alex', answer: 7, isHost: false },
-    { id: 'player3', name: 'Taylor', answer: 4, isHost: false },
-    { id: 'player4', name: 'Jordan', answer: 9, isHost: false },
-  ]);
+  const [question, setQuestion] = useState<string>('');
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [currentHost, setCurrentHost] = useState<string>('');
+
+  useEffect(() => {
+    // Connect to socket and join the room
+    socketService.connect();
+    socketService.joinRoom(roomCode, currentPlayer.id, currentPlayer.name);
+
+    // Set up socket event listeners
+    const roomUpdateHandler = (data: any) => {
+      setPlayers(data.players || []);
+      if (data.currentQuestion) {
+        setQuestion(data.currentQuestion);
+      }
+      if (data.hostId) {
+        setCurrentHost(data.hostId);
+      }
+    };
+
+    const categorySelectedHandler = (data: any) => {
+      if (data.currentQuestion) {
+        setQuestion(data.currentQuestion);
+      }
+    };
+
+    const playerAnsweredHandler = (data: any) => {
+      // Update the player's answer in the local state
+      setPlayers(prevPlayers => 
+        prevPlayers.map(player => 
+          player.id === data.playerId 
+            ? { ...player, answer: data.answer }
+            : player
+        )
+      );
+    };
+
+    const newQuestionHandler = (data: any) => {
+      setQuestion(data.question || '');
+      setSelectedNumber(null);
+      
+      // Update players list
+      if (data.players) {
+        setPlayers(data.players);
+      }
+    };
+
+    // Register event listeners
+    socketService.on('room_update', roomUpdateHandler);
+    socketService.on('category_selected', categorySelectedHandler);
+    socketService.on('player_answered', playerAnsweredHandler);
+    socketService.on('new_question', newQuestionHandler);
+    socketService.on('player_joined', (data: any) => {
+      toast({
+        title: "Player Joined",
+        description: `${data.playerName} has joined the room`,
+      });
+    });
+    socketService.on('player_left', (data: any) => {
+      toast({
+        title: "Player Left",
+        description: `${data.playerName} has left the room`,
+      });
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socketService.off('room_update', roomUpdateHandler);
+      socketService.off('category_selected', categorySelectedHandler);
+      socketService.off('player_answered', playerAnsweredHandler);
+      socketService.off('new_question', newQuestionHandler);
+      socketService.removeAllListeners('player_joined');
+      socketService.removeAllListeners('player_left');
+    };
+  }, [roomCode, currentPlayer]);
+
+  const handleLeaveRoom = () => {
+    socketService.leaveRoom(roomCode, currentPlayer.id);
+    socketService.disconnect();
+    onLeaveRoom();
+  };
 
   const handleChooseNumber = () => {
     if (selectedNumber === null) return;
     
-    // Get a new random question
-    setQuestion(getRandomQuestion(category));
+    socketService.selectNumber(roomCode, currentPlayer.id, selectedNumber);
     
     toast({
-      title: "New Question Selected",
-      description: `You chose number ${selectedNumber}`,
+      title: "Number Selected",
+      description: `You chose ${selectedNumber}`,
     });
   };
 
   const handleNextTurn = () => {
-    setQuestion(getRandomQuestion(category));
-    setSelectedNumber(null);
-    
-    toast({
-      title: "Next Turn",
-      description: "New question loaded",
-    });
+    // Only the host can move to the next turn
+    if (currentPlayer.id === currentHost || currentPlayer.isHost) {
+      socketService.nextTurn(roomCode, currentPlayer.id);
+    }
   };
 
   const handleCopyRoomCode = () => {
@@ -60,13 +130,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
     setSelectedNumber(null);
   };
 
+  const isHost = currentPlayer.id === currentHost || currentPlayer.isHost;
+
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 animate-fade-in">
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
           className="flex items-center gap-2" 
-          onClick={onLeaveRoom}
+          onClick={handleLeaveRoom}
         >
           <ArrowLeft className="h-4 w-4" /> Leave Room
         </Button>
@@ -104,7 +176,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
         </CardHeader>
         <CardContent className="pt-6 pb-8">
           <p className="text-2xl font-medium text-center px-4 animate-fade-in">
-            {question}
+            {question || "Waiting for the first question..."}
           </p>
         </CardContent>
       </Card>
@@ -132,7 +204,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
             </Button>
           )}
           
-          {currentPlayer.isHost && (
+          {isHost && (
             <Button 
               variant="outline"
               className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
@@ -166,11 +238,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
               <CardHeader className="py-3 px-4">
                 <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
                   {player.name}
-                  {player.isHost && (
+                  {player.id === currentHost && (
                     <Crown className="h-4 w-4 text-amber-500 ml-1" />
                   )}
                 </CardTitle>
               </CardHeader>
+              <CardContent className="py-2 text-center">
+                {player.answer !== null && player.answer !== undefined ? (
+                  <Badge className="bg-icebreaker">{player.answer}</Badge>
+                ) : (
+                  <span className="text-gray-400 text-sm">No answer yet</span>
+                )}
+              </CardContent>
             </Card>
           ))}
         </div>

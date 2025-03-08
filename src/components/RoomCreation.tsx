@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateRoomCode, generatePlayerId } from '@/lib/gameUtils';
 import { ArrowRight, Plus } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import socketService from '@/lib/socketService';
 
 interface RoomCreationProps {
   onRoomCreated: (roomCode: string, playerName: string, playerId: string) => void;
@@ -14,20 +15,26 @@ const RoomCreation: React.FC<RoomCreationProps> = ({ onRoomCreated }) => {
   const [playerName, setPlayerName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCreateRoom = (e: React.FormEvent) => {
+  const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!playerName.trim()) return;
     
     setIsLoading(true);
     
-    // Simulate network delay (would be a real API call in production)
-    setTimeout(() => {
-      const roomCode = generateRoomCode();
-      const playerId = generatePlayerId();
-      
-      onRoomCreated(roomCode, playerName, playerId);
+    try {
+      // Call the actual API through our socket service
+      const result = await socketService.createRoom(playerName);
+      onRoomCreated(result.roomCode, playerName, result.playerId);
+    } catch (error) {
+      console.error('Failed to create room:', error);
+      toast({
+        title: "Failed to Create Room",
+        description: "There was an error creating the room. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (

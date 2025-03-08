@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { generatePlayerId } from '@/lib/gameUtils';
 import { ArrowRight, LogIn } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import socketService from '@/lib/socketService';
 
 interface RoomJoinProps {
   onRoomJoined: (roomCode: string, playerName: string, playerId: string) => void;
@@ -16,30 +16,27 @@ const RoomJoin: React.FC<RoomJoinProps> = ({ onRoomJoined }) => {
   const [playerName, setPlayerName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleJoinRoom = (e: React.FormEvent) => {
+  const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!roomCode.trim() || !playerName.trim()) return;
     
     setIsLoading(true);
     
-    // In a real application, we would verify the room code on the server
-    // For this demo, we'll simulate a successful join after a brief delay
-    setTimeout(() => {
-      if (roomCode.length !== 6) {
-        toast({
-          title: "Invalid Room Code",
-          description: "Please enter a valid 6-character room code",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      const playerId = generatePlayerId();
-      onRoomJoined(roomCode.toUpperCase(), playerName, playerId);
+    try {
+      // Call the actual API through our socket service
+      const result = await socketService.joinRoom_api(roomCode.toUpperCase(), playerName);
+      onRoomJoined(result.roomCode, playerName, result.playerId);
+    } catch (error) {
+      console.error('Failed to join room:', error);
+      toast({
+        title: "Failed to Join Room",
+        description: "The room code may be invalid or the room no longer exists.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   // Format room code input (uppercase and max 6 chars)
