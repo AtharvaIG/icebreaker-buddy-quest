@@ -1,33 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RoomCreation from './RoomCreation';
 import RoomJoin from './RoomJoin';
-import { Player } from '@/lib/gameUtils';
 
 interface WelcomeScreenProps {
-  onGameStart: (roomCode: string, player: Player) => void;
+  onGameStart: (roomCode: string, playerName: string, playerId: string) => void;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
-  const handleRoomCreated = (roomCode: string, playerName: string, playerId: string) => {
-    const player: Player = {
-      id: playerId,
-      name: playerName,
-      isHost: true
-    };
-    onGameStart(roomCode, player);
-  };
-
-  const handleRoomJoined = (roomCode: string, playerName: string, playerId: string) => {
-    const player: Player = {
-      id: playerId,
-      name: playerName,
-      isHost: false
-    };
-    onGameStart(roomCode, player);
-  };
-
   return (
     <div className="page-container">
       <div className="text-center mb-8 animate-fade-in">
@@ -57,10 +38,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
           <TabsTrigger value="create">Create a Room</TabsTrigger>
         </TabsList>
         <TabsContent value="join">
-          <RoomJoin onRoomJoined={handleRoomJoined} />
+          <RoomJoin onRoomJoined={onGameStart} />
         </TabsContent>
         <TabsContent value="create">
-          <RoomCreation onRoomCreated={handleRoomCreated} />
+          <RoomCreation onRoomCreated={onGameStart} />
         </TabsContent>
       </Tabs>
     </div>
