@@ -1,4 +1,3 @@
-
 import { io, Socket } from 'socket.io-client';
 import { toast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,10 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const MAX_RECONNECTION_ATTEMPTS = 3;
 
-// DEMO mode setting - enable if backend is unavailable
-const DEMO_MODE = true; // Set to false to disable demo mode
-
-// Mock data for demo mode
+// Mock data for offline/demo mode
 const DEMO_QUESTIONS = [
   "On a scale of 1-10, how comfortable are you meeting new people?",
   "Rate your public speaking skills from 1-10",
@@ -34,11 +30,6 @@ class SocketService {
 
   // Initialize socket connection with better error handling
   connect() {
-    if (DEMO_MODE) {
-      console.log('Running in DEMO MODE - no backend connection required');
-      return null;
-    }
-
     if (this.socket && this.socket.connected) {
       return this.socket;
     }
@@ -76,7 +67,7 @@ class SocketService {
         if (this.reconnectionAttempts >= MAX_RECONNECTION_ATTEMPTS) {
           toast({
             title: 'Connection Error',
-            description: 'Failed to connect to the game server. Running in demo mode.',
+            description: 'Failed to connect to the game server. Running in offline mode.',
             variant: 'destructive',
           });
           this.isConnecting = false;
@@ -103,7 +94,7 @@ class SocketService {
       this.isConnecting = false;
       toast({
         title: 'Connection Failed',
-        description: 'Running in demo mode without server connection.',
+        description: 'Running in offline mode without server connection.',
         variant: 'destructive',
       });
       return null;
@@ -112,25 +103,7 @@ class SocketService {
 
   // Check if socket is connected
   isConnected() {
-    if (DEMO_MODE) return true;
     return !!this.socket?.connected;
-  }
-
-  // Disconnect the socket
-  disconnect() {
-    if (DEMO_MODE) {
-      this.roomCode = null;
-      this.listeners.clear();
-      return;
-    }
-
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.roomCode = null;
-      this.listeners.clear();
-      this.isConnecting = false;
-    }
   }
 
   // DEMO methods
@@ -151,7 +124,7 @@ class SocketService {
         roomCode,
         players: [],
         currentQuestion: this.getRandomQuestion(),
-        category: 'General',
+        category: 'personal',
         usedQuestions: []
       });
     }
@@ -162,10 +135,27 @@ class SocketService {
     return DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)];
   }
 
+  // Disconnect the socket
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.roomCode = null;
+      this.listeners.clear();
+      this.isConnecting = false;
+    }
+  }
+
   // Join a room
   joinRoom(roomCode: string, playerId: string, playerName: string) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Joining room ${roomCode} as ${playerName} (${playerId})`);
+    // If no socket connection, try to create one
+    if (!this.socket) {
+      this.connect();
+    }
+
+    // If no connection or we're using offline mode
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Joining room ${roomCode} as ${playerName} (${playerId})`);
       this.roomCode = roomCode;
       
       const room = this._getDemoRoom(roomCode);
@@ -199,21 +189,6 @@ class SocketService {
       return;
     }
 
-    if (!this.socket) {
-      this.connect();
-    }
-
-    // If still not connected after trying to connect
-    if (!this.socket) {
-      console.error('Cannot join room: Socket not connected');
-      toast({
-        title: 'Connection Error',
-        description: 'Cannot join room: Not connected to server',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     this.roomCode = roomCode;
     this.socket.emit('join_room', { roomCode, playerId, playerName });
     console.log(`Joining room ${roomCode} as ${playerName} (${playerId})`);
@@ -221,8 +196,8 @@ class SocketService {
 
   // Leave a room
   leaveRoom(roomCode: string, playerId: string) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Leaving room ${roomCode}`);
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Leaving room ${roomCode}`);
       
       const room = this._getDemoRoom(roomCode);
       const playerIndex = room.players.findIndex((p: any) => p.id === playerId);
@@ -234,7 +209,7 @@ class SocketService {
         // If all players have left, remove the room
         if (room.players.length === 0) {
           this.demoRooms.delete(roomCode);
-          console.log(`[DEMO] Room ${roomCode} has been closed (no players left)`);
+          console.log(`[OFFLINE] Room ${roomCode} has been closed (no players left)`);
           return;
         }
         
@@ -261,8 +236,6 @@ class SocketService {
       this.roomCode = null;
       return;
     }
-
-    if (!this.socket) return;
     
     console.log(`Leaving room ${roomCode}`);
     this.socket.emit('leave_room', { roomCode, playerId });
@@ -271,8 +244,8 @@ class SocketService {
 
   // Select a category
   selectCategory(roomCode: string, playerId: string, category: string) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Selecting category: ${category}`);
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Selecting category: ${category}`);
       
       const room = this._getDemoRoom(roomCode);
       room.category = category;
@@ -286,8 +259,6 @@ class SocketService {
       
       return;
     }
-
-    if (!this.socket) return;
     
     console.log(`Selecting category: ${category}`);
     this.socket.emit('select_category', { roomCode, playerId, category });
@@ -295,8 +266,8 @@ class SocketService {
 
   // Select a number
   selectNumber(roomCode: string, playerId: string, number: number) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Selecting number: ${number}`);
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Selecting number: ${number}`);
       
       const room = this._getDemoRoom(roomCode);
       const player = room.players.find((p: any) => p.id === playerId);
@@ -314,8 +285,6 @@ class SocketService {
       
       return;
     }
-
-    if (!this.socket) return;
     
     console.log(`Selecting number: ${number}`);
     this.socket.emit('select_number', { roomCode, playerId, number });
@@ -323,14 +292,14 @@ class SocketService {
 
   // Move to next turn (host only)
   nextTurn(roomCode: string, playerId: string) {
-    if (DEMO_MODE) {
-      console.log('[DEMO] Moving to next turn');
+    if (!this.socket || !this.socket.connected) {
+      console.log('[OFFLINE] Moving to next turn');
       
       const room = this._getDemoRoom(roomCode);
       const player = room.players.find((p: any) => p.id === playerId);
       
       if (!player || !player.isHost) {
-        console.error('[DEMO] Only the host can advance to the next turn');
+        console.error('[OFFLINE] Only the host can advance to the next turn');
         return;
       }
       
@@ -350,8 +319,6 @@ class SocketService {
       
       return;
     }
-
-    if (!this.socket) return;
     
     console.log('Moving to next turn');
     this.socket.emit('next_turn', { roomCode, playerId });
@@ -359,8 +326,13 @@ class SocketService {
 
   // Add event listener
   on(event: string, callback: Function) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Registering listener for event: ${event}`);
+    if (!this.socket) {
+      this.connect();
+    }
+
+    // If no connection or we're using offline mode
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Registering listener for event: ${event}`);
       
       // Store listener for cleanup
       if (!this.listeners.has(event)) {
@@ -371,30 +343,22 @@ class SocketService {
       return () => this.off(event, callback);
     }
 
-    if (!this.socket) {
-      this.connect();
+    console.log(`Registering listener for event: ${event}`);
+    this.socket.on(event, callback as any);
+    
+    // Store listener for cleanup
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
     }
-
-    if (this.socket) {
-      console.log(`Registering listener for event: ${event}`);
-      this.socket.on(event, callback as any);
-      
-      // Store listener for cleanup
-      if (!this.listeners.has(event)) {
-        this.listeners.set(event, []);
-      }
-      this.listeners.get(event)?.push(callback);
-    } else {
-      console.error(`Cannot register listener for ${event}: Socket not connected`);
-    }
+    this.listeners.get(event)?.push(callback);
     
     return () => this.off(event, callback);
   }
 
   // Remove specific event listener
   off(event: string, callback: Function) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Removing listener for event: ${event}`);
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Removing listener for event: ${event}`);
       
       // Remove from stored listeners
       const eventListeners = this.listeners.get(event);
@@ -407,8 +371,6 @@ class SocketService {
       
       return;
     }
-
-    if (!this.socket) return;
     
     console.log(`Removing listener for event: ${event}`);
     this.socket.off(event, callback as any);
@@ -425,49 +387,54 @@ class SocketService {
 
   // Remove all listeners for an event
   removeAllListeners(event: string) {
-    if (DEMO_MODE) {
-      console.log(`[DEMO] Removing all listeners for event: ${event}`);
+    if (!this.socket || !this.socket.connected) {
+      console.log(`[OFFLINE] Removing all listeners for event: ${event}`);
       this.listeners.delete(event);
       return;
     }
-
-    if (!this.socket) return;
     
     console.log(`Removing all listeners for event: ${event}`);
     this.socket.removeAllListeners(event);
     this.listeners.delete(event);
   }
 
-  // API methods with demo mode support
+  // API methods
 
   // Create room API call
   async createRoom(playerName: string) {
     console.log(`Creating room for player: ${playerName}`);
     
-    if (DEMO_MODE) {
-      // In demo mode, generate a random room code
-      const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const playerId = uuidv4();
-      
-      // Create the room
-      const room = this._getDemoRoom(roomCode);
-      room.players.push({
-        id: playerId,
-        name: playerName,
-        isHost: true,
-        answer: null
-      });
-      
-      console.log('[DEMO] Room created:', { roomCode, playerId, isHost: true });
-      
-      return {
-        roomCode,
-        playerId,
-        isHost: true
-      };
-    }
-    
     try {
+      // First try to connect to the real server
+      if (!this.socket) {
+        this.connect();
+      }
+      
+      // If we couldn't connect, use offline mode
+      if (!this.socket || !this.socket.connected) {
+        // In offline mode, generate a random room code
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerId = uuidv4();
+        
+        // Create the room
+        const room = this._getDemoRoom(roomCode);
+        room.players.push({
+          id: playerId,
+          name: playerName,
+          isHost: true,
+          answer: null
+        });
+        
+        console.log('[OFFLINE] Room created:', { roomCode, playerId, isHost: true });
+        
+        return {
+          roomCode,
+          playerId,
+          isHost: true
+        };
+      }
+      
+      // Otherwise use the real server
       const response = await fetch(`${API_URL}/api/create_room`, {
         method: 'POST',
         headers: {
@@ -487,15 +454,35 @@ class SocketService {
     } catch (error) {
       console.error('Error creating room:', error);
       
-      if (error instanceof Error && error.message === 'Failed to fetch') {
+      // If server is unavailable, switch to offline mode
+      if (error instanceof Error && (error.message === 'Failed to fetch' || 
+          error.message.includes('NetworkError'))) {
         toast({
           title: 'Server Unavailable',
-          description: 'The game server is unavailable. Switching to demo mode.',
+          description: 'The game server is unavailable. Running in offline mode.',
           variant: 'destructive',
         });
         
-        // Switch to demo mode and retry
-        return this.createRoom(playerName);
+        // Generate offline room
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerId = uuidv4();
+        
+        // Create the room
+        const room = this._getDemoRoom(roomCode);
+        room.players.push({
+          id: playerId,
+          name: playerName,
+          isHost: true,
+          answer: null
+        });
+        
+        console.log('[OFFLINE] Room created:', { roomCode, playerId, isHost: true });
+        
+        return {
+          roomCode,
+          playerId,
+          isHost: true
+        };
       }
       
       toast({
@@ -511,25 +498,32 @@ class SocketService {
   async joinRoom_api(roomCode: string, playerName: string) {
     console.log(`Joining room ${roomCode} as ${playerName}`);
     
-    if (DEMO_MODE) {
-      const playerId = uuidv4();
-      const room = this._getDemoRoom(roomCode);
-      
-      // Check if room exists
-      if (!room) {
-        throw new Error('Room not found');
+    try {
+      // First try to connect to the real server
+      if (!this.socket) {
+        this.connect();
       }
       
-      console.log('[DEMO] Joined room:', { roomCode, playerId, isHost: false });
+      // If we couldn't connect, use offline mode
+      if (!this.socket || !this.socket.connected) {
+        const playerId = uuidv4();
+        const room = this._getDemoRoom(roomCode);
+        
+        // Check if room exists
+        if (!room) {
+          throw new Error('Room not found');
+        }
+        
+        console.log('[OFFLINE] Joined room:', { roomCode, playerId, isHost: false });
+        
+        return {
+          roomCode,
+          playerId,
+          isHost: false
+        };
+      }
       
-      return {
-        roomCode,
-        playerId,
-        isHost: false
-      };
-    }
-    
-    try {
+      // Otherwise use the real server
       const response = await fetch(`${API_URL}/api/join_room`, {
         method: 'POST',
         headers: {
@@ -549,15 +543,27 @@ class SocketService {
     } catch (error) {
       console.error('Error joining room:', error);
       
-      if (error instanceof Error && error.message === 'Failed to fetch') {
+      // If server is unavailable, switch to offline mode
+      if (error instanceof Error && (error.message === 'Failed to fetch' || 
+          error.message.includes('NetworkError'))) {
         toast({
           title: 'Server Unavailable',
-          description: 'The game server is unavailable. Switching to demo mode.',
+          description: 'The game server is unavailable. Running in offline mode.',
           variant: 'destructive',
         });
         
-        // Switch to demo mode and retry
-        return this.joinRoom_api(roomCode, playerName);
+        const playerId = uuidv4();
+        const room = this._getDemoRoom(roomCode);
+        
+        if (!room) {
+          throw new Error('Room not found');
+        }
+        
+        return {
+          roomCode,
+          playerId,
+          isHost: false
+        };
       }
       
       toast({

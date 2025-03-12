@@ -5,18 +5,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
-  Book, 
-  BriefcaseBusiness, 
-  Coffee, 
-  Compass, 
   Heart, 
-  HelpCircle, 
-  Lightbulb, 
-  MessageCircle, 
-  Palette, 
+  BriefcaseBusiness, 
   Pizza, 
-  Smile, 
-  Users 
+  Palette, 
+  Compass, 
+  MessageCircle 
 } from 'lucide-react';
 
 interface CategorySelectionProps {
@@ -25,6 +19,7 @@ interface CategorySelectionProps {
   roomCode: string;
 }
 
+// Reduced to 6 specific categories
 const categories = [
   { id: 'personal', name: 'Personal', icon: <Heart className="h-5 w-5" />, description: 'Get to know each other on a personal level' },
   { id: 'work', name: 'Work Life', icon: <BriefcaseBusiness className="h-5 w-5" />, description: 'Discover work preferences and habits' },
@@ -32,10 +27,6 @@ const categories = [
   { id: 'hobbies', name: 'Hobbies', icon: <Palette className="h-5 w-5" />, description: 'Explore interests and pastimes' },
   { id: 'travel', name: 'Travel', icon: <Compass className="h-5 w-5" />, description: 'Adventures and destination preferences' },
   { id: 'deep', name: 'Deep Questions', icon: <MessageCircle className="h-5 w-5" />, description: 'Thought-provoking questions' },
-  { id: 'fun', name: 'Fun Questions', icon: <Smile className="h-5 w-5" />, description: 'Lighthearted and entertaining' },
-  { id: 'friendship', name: 'Friendship', icon: <Users className="h-5 w-5" />, description: 'Questions about relationships' },
-  { id: 'hypothetical', name: 'Hypothetical', icon: <Lightbulb className="h-5 w-5" />, description: '"What if" scenarios' },
-  { id: 'random', name: 'Random Mix', icon: <Coffee className="h-5 w-5" />, description: 'A little bit of everything' },
 ];
 
 const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect, onBack, roomCode }) => {

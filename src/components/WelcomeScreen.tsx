@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import RoomCreation from './RoomCreation';
 import RoomJoin from './RoomJoin';
 
@@ -17,7 +16,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-icebreaker to-icebreaker-dark">
             Icebreaker
           </span>
-          <Badge variant="outline" className="ml-2 text-xs font-normal bg-yellow-100">Demo Mode</Badge>
         </h1>
         <p className="text-xl text-gray-600 max-w-md mx-auto mb-6">
           A fun way to get to know each other better
