@@ -71,14 +71,6 @@ class GameSession:
             "What's your favorite form of transportation?",
             "What's the best museum you've ever been to?",
         ],
-        "random": [
-            "If flowers could talk, what do you think they would sound like?",
-            "If you could be any household item, which would you choose?",
-            "If you were a ghost, how would you haunt people?",
-            "What bodily function do you wish would just go away?",
-            "If you could shoot anything from a cannon, what would you pick?",
-            "Do you have a favourite family tradition?",
-        ],
         "deep": [
             "What's something you consider unforgivable?",
             "What's the most loved you've ever felt?",
@@ -86,30 +78,6 @@ class GameSession:
             "When's the last time you felt inspired to create something?",
             "What does friendship mean to you?",
             "Do you believe in soulmates?",
-        ],
-        "fun": [
-            "Would you ever open a business?",
-            "How gullible do you consider yourself?",
-            "What's the spiciest food you've ever eaten?",
-            "Is there anything you'd wait in line for a week to do, see, or get?",
-            "How do you like to be comforted when you're sad or upset?",
-            "Do you consider yourself lucky?",
-        ],
-        "friendship": [
-            "Do you believe in having one best friend?",
-            "Who do you feel the safest around?",
-            "What's your favourite childhood memory with a friend?",
-            "Have you ever experienced a 'friendship breakup'? What did it teach you?",
-            "Who was your first friend, and are they still in your life?",
-            "How can I be a better friend to you?",
-        ],
-        "hypothetical": [
-            "If you could be an expert at one thing, what would it be?",
-            "If money was no object, what would you buy?",
-            "If you could time travel, where would you go?",
-            "What's your survival plan during a zombie apocalypse?",
-            "If you were an animal, what would you be?",
-            "If a song played every time you entered a room, what would it be?",
         ]
     }
     
@@ -125,7 +93,7 @@ class GameSession:
         self.room_code = room_code
         self.host = host
         self.players: List[Player] = [host]
-        self.category = "random"  # Default category
+        self.category = "personal"  # Default category
         self.current_question = self._get_random_question()
         self.used_questions: List[str] = [self.current_question]  # Track used questions
     
@@ -149,7 +117,7 @@ class GameSession:
         if category in self.QUESTIONS:
             self.category = category
         else:
-            self.category = "random"  # Fallback to random if category doesn't exist
+            self.category = "personal"  # Fallback to personal if category doesn't exist
     
     def next_question(self) -> str:
         """Get the next question, avoiding duplicates"""
