@@ -3,107 +3,126 @@ import React, { useState, useEffect } from 'react';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import GameScreen from '@/components/GameScreen';
 import CategorySelection from '@/components/CategorySelection';
+import PlayerSetup from '@/components/PlayerSetup';
 import { Player, useLocalStorage } from '@/lib/gameUtils';
-import socketService from '@/lib/socketService';
+import offlineGameService from '@/lib/offlineGameService';
 
 const Index = () => {
   // Store game state in localStorage to persist across refreshes
   const [gameState, setGameState] = useLocalStorage<{
     inGame: boolean;
+    inPlayerSetup: boolean;
     inCategorySelection: boolean;
     roomCode: string;
-    player: Player | null;
+    players: Player[];
     selectedCategory: string | null;
+    currentPlayerId: string | null;
   }>('icebreaker_game_state', {
     inGame: false,
+    inPlayerSetup: false,
     inCategorySelection: false,
     roomCode: '',
-    player: null,
+    players: [],
     selectedCategory: null,
+    currentPlayerId: null,
   });
 
-  useEffect(() => {
-    // Initialize socket connection on page load
-    socketService.connect();
+  const resetGame = () => {
+    offlineGameService.resetGame();
+    setGameState({
+      inGame: false,
+      inPlayerSetup: false,
+      inCategorySelection: false,
+      roomCode: '',
+      players: [],
+      selectedCategory: null,
+      currentPlayerId: null,
+    });
+  };
 
-    // If we're already in a game, rejoin it
-    if (gameState.inGame && gameState.roomCode && gameState.player) {
-      socketService.joinRoom(
-        gameState.roomCode,
-        gameState.player.id,
-        gameState.player.name
-      );
+  useEffect(() => {
+    // If we're already in a game, restore it
+    if (gameState.inGame && gameState.roomCode && gameState.players.length > 0 && gameState.selectedCategory) {
+      const gameServiceState = offlineGameService.getState();
+      
+      if (!gameServiceState) {
+        // Initialize game service with stored data
+        offlineGameService.initialize(gameState.roomCode, gameState.selectedCategory);
+        
+        // Add all players back
+        gameState.players.forEach(player => {
+          // This will emit room_update events, but we're not listening yet
+          offlineGameService.addPlayer(player.name);
+        });
+      }
     }
 
-    // Cleanup on component unmount
+    // Cleanup on unmount
     return () => {
-      if (!gameState.inGame) {
-        socketService.disconnect();
-      }
+      // We don't need to reset the game on unmount for offline mode
     };
   }, []);
 
-  const handleGameStart = (roomCode: string, playerName: string, playerId: string) => {
-    const player: Player = {
-      id: playerId,
-      name: playerName,
-      isHost: false, // This will be updated by the server
-    };
-
+  const handleStartSetup = () => {
     setGameState({
       ...gameState,
+      inPlayerSetup: true,
+      roomCode: 'LOCAL-' + Math.floor(Math.random() * 1000),
+    });
+  };
+
+  const handlePlayerSetupComplete = (players: Player[]) => {
+    setGameState({
+      ...gameState,
+      inPlayerSetup: false,
       inCategorySelection: true,
-      roomCode,
-      player,
+      players,
     });
   };
 
   const handleCategorySelect = (category: string) => {
-    if (gameState.roomCode && gameState.player) {
-      // Send category selection to the server
-      socketService.selectCategory(gameState.roomCode, gameState.player.id, category);
-      
-      // Update game state
-      setGameState({
-        ...gameState,
-        inGame: true,
-        inCategorySelection: false,
-        selectedCategory: category,
-      });
-    }
-  };
-
-  const handleLeaveRoom = () => {
-    if (gameState.roomCode && gameState.player) {
-      socketService.leaveRoom(gameState.roomCode, gameState.player.id);
-      socketService.disconnect();
-    }
+    // Initialize offline game service
+    offlineGameService.initialize(gameState.roomCode, category);
+    
+    // Add all players
+    gameState.players.forEach(player => {
+      offlineGameService.addPlayer(player.name);
+    });
     
     setGameState({
-      inGame: false,
+      ...gameState,
+      inGame: true,
       inCategorySelection: false,
-      roomCode: '',
-      player: null,
-      selectedCategory: null,
+      selectedCategory: category,
     });
+  };
+
+  const handleLeaveGame = () => {
+    resetGame();
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
-      {!gameState.inCategorySelection && !gameState.inGame ? (
-        <WelcomeScreen onGameStart={handleGameStart} />
+      {!gameState.inPlayerSetup && !gameState.inCategorySelection && !gameState.inGame ? (
+        <WelcomeScreen onGameStart={handleStartSetup} />
+      ) : gameState.inPlayerSetup ? (
+        <PlayerSetup 
+          onComplete={handlePlayerSetupComplete} 
+          onBack={handleLeaveGame}
+          roomCode={gameState.roomCode}
+        />
       ) : gameState.inCategorySelection ? (
         <CategorySelection 
           onCategorySelect={handleCategorySelect} 
-          onBack={handleLeaveRoom} 
+          onBack={() => setGameState({...gameState, inPlayerSetup: true, inCategorySelection: false})} 
           roomCode={gameState.roomCode}
         />
       ) : (
         <GameScreen 
           roomCode={gameState.roomCode} 
-          currentPlayer={gameState.player!}
+          players={gameState.players}
           category={gameState.selectedCategory!}
-          onLeaveRoom={handleLeaveRoom} 
+          onLeaveRoom={handleLeaveGame} 
         />
       )}
     </div>

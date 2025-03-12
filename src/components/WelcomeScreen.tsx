@@ -1,49 +1,55 @@
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import RoomCreation from './RoomCreation';
-import RoomJoin from './RoomJoin';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Users } from 'lucide-react';
 
 interface WelcomeScreenProps {
-  onGameStart: (roomCode: string, playerName: string, playerId: string) => void;
+  onGameStart: () => void;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
   return (
-    <div className="page-container">
-      <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-icebreaker to-icebreaker-dark">
-            Icebreaker
-          </span>
+    <div className="container max-w-md mx-auto py-16 px-4 animate-fade-in">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+          Icebreaker
         </h1>
-        <p className="text-xl text-gray-600 max-w-md mx-auto mb-6">
-          A fun way to get to know each other better
+        <p className="text-xl text-gray-600">
+          Get to know each other better
         </p>
-        
-        <div className="max-w-md mx-auto bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-4 mb-8">
-          <h2 className="text-lg font-medium mb-2">How to Play:</h2>
-          <ol className="text-left text-gray-700 space-y-2 pl-5 list-decimal">
-            <li>Create a room or join with a code</li>
-            <li>Select a question category</li>
-            <li>Answer questions by rating them on a scale of 1-10</li>
-            <li>See how everyone answered and discuss!</li>
-          </ol>
-        </div>
       </div>
-      
-      <Tabs defaultValue="join" className="w-full max-w-md animate-fade-in-up">
-        <TabsList className="grid grid-cols-2 w-full mb-6">
-          <TabsTrigger value="join">Join a Room</TabsTrigger>
-          <TabsTrigger value="create">Create a Room</TabsTrigger>
-        </TabsList>
-        <TabsContent value="join">
-          <RoomJoin onRoomJoined={onGameStart} />
-        </TabsContent>
-        <TabsContent value="create">
-          <RoomCreation onRoomCreated={onGameStart} />
-        </TabsContent>
-      </Tabs>
+
+      <Card className="glass-card animate-fade-in-up">
+        <CardHeader>
+          <div className="flex justify-center">
+            <div className="p-3 bg-icebreaker rounded-full">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-center text-xl mt-2">Local Multiplayer</CardTitle>
+          <CardDescription className="text-center">
+            Play with up to 4 friends on this device
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="mb-4">
+            Add player names, select a category, and start answering fun questions!
+          </p>
+
+          <Button
+            onClick={onGameStart}
+            className="bg-icebreaker hover:bg-icebreaker-dark transition-colors w-full"
+            size="lg"
+          >
+            Start Game
+          </Button>
+        </CardContent>
+      </Card>
+
+      <p className="text-center text-sm text-gray-500 mt-8">
+        No internet connection or sign-up required.
+      </p>
     </div>
   );
 };

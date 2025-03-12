@@ -7,46 +7,39 @@ import NumberSelector from './NumberSelector';
 import { Player } from '@/lib/gameUtils';
 import { ArrowLeft, ArrowRight, RefreshCw, Crown, MessageCircle, Copy, Users } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import socketService from '@/lib/socketService';
+import offlineGameService from '@/lib/offlineGameService';
 
 interface GameScreenProps {
   roomCode: string;
-  currentPlayer: Player;
+  players: Player[];
   category: string;
   onLeaveRoom: () => void;
 }
 
-const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, category, onLeaveRoom }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, onLeaveRoom }) => {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [currentHost, setCurrentHost] = useState<string>('');
+  const [gamePlayers, setGamePlayers] = useState<Player[]>(players);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [currentHostId, setCurrentHostId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Connect to socket and join the room
-    socketService.connect();
-    socketService.joinRoom(roomCode, currentPlayer.id, currentPlayer.name);
-
-    // Set up socket event listeners
+    // Set up offline game event listeners
     const roomUpdateHandler = (data: any) => {
-      setPlayers(data.players || []);
+      setGamePlayers(data.players || []);
       if (data.currentQuestion) {
         setQuestion(data.currentQuestion);
       }
-      if (data.hostId) {
-        setCurrentHost(data.hostId);
-      }
-    };
-
-    const categorySelectedHandler = (data: any) => {
-      if (data.currentQuestion) {
-        setQuestion(data.currentQuestion);
+      // Find current host
+      const host = data.players?.find((p: Player) => p.isHost);
+      if (host) {
+        setCurrentHostId(host.id);
       }
     };
 
     const playerAnsweredHandler = (data: any) => {
       // Update the player's answer in the local state
-      setPlayers(prevPlayers => 
+      setGamePlayers(prevPlayers => 
         prevPlayers.map(player => 
           player.id === data.playerId 
             ? { ...player, answer: data.answer }
@@ -58,64 +51,62 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
     const newQuestionHandler = (data: any) => {
       setQuestion(data.question || '');
       setSelectedNumber(null);
+      setSelectedPlayerId(null);
       
       // Update players list
       if (data.players) {
-        setPlayers(data.players);
+        setGamePlayers(data.players);
       }
     };
 
     // Register event listeners
-    socketService.on('room_update', roomUpdateHandler);
-    socketService.on('category_selected', categorySelectedHandler);
-    socketService.on('player_answered', playerAnsweredHandler);
-    socketService.on('new_question', newQuestionHandler);
-    socketService.on('player_joined', (data: any) => {
-      toast({
-        title: "Player Joined",
-        description: `${data.playerName} has joined the room`,
-      });
-    });
-    socketService.on('player_left', (data: any) => {
-      toast({
-        title: "Player Left",
-        description: `${data.playerName} has left the room`,
-      });
-    });
+    offlineGameService.on('room_update', roomUpdateHandler);
+    offlineGameService.on('player_answered', playerAnsweredHandler);
+    offlineGameService.on('new_question', newQuestionHandler);
+
+    // Get initial state
+    const gameState = offlineGameService.getState();
+    if (gameState) {
+      setQuestion(gameState.currentQuestion);
+      setGamePlayers(gameState.players);
+      const host = gameState.players.find(p => p.isHost);
+      if (host) {
+        setCurrentHostId(host.id);
+      }
+    }
 
     // Cleanup on component unmount
     return () => {
-      socketService.off('room_update', roomUpdateHandler);
-      socketService.off('category_selected', categorySelectedHandler);
-      socketService.off('player_answered', playerAnsweredHandler);
-      socketService.off('new_question', newQuestionHandler);
-      socketService.removeAllListeners('player_joined');
-      socketService.removeAllListeners('player_left');
+      offlineGameService.off('room_update', roomUpdateHandler);
+      offlineGameService.off('player_answered', playerAnsweredHandler);
+      offlineGameService.off('new_question', newQuestionHandler);
     };
-  }, [roomCode, currentPlayer]);
+  }, []);
 
   const handleLeaveRoom = () => {
-    socketService.leaveRoom(roomCode, currentPlayer.id);
-    socketService.disconnect();
     onLeaveRoom();
   };
 
+  const handlePlayerSelect = (playerId: string) => {
+    setSelectedPlayerId(playerId);
+  };
+
   const handleChooseNumber = () => {
-    if (selectedNumber === null) return;
+    if (selectedNumber === null || selectedPlayerId === null) return;
     
-    socketService.selectNumber(roomCode, currentPlayer.id, selectedNumber);
+    offlineGameService.selectNumber(selectedPlayerId, selectedNumber);
     
     toast({
       title: "Number Selected",
-      description: `You chose ${selectedNumber}`,
+      description: `${gamePlayers.find(p => p.id === selectedPlayerId)?.name} chose ${selectedNumber}`,
     });
+    
+    setSelectedNumber(null);
+    setSelectedPlayerId(null);
   };
 
   const handleNextTurn = () => {
-    // Only the host can move to the next turn
-    if (currentPlayer.id === currentHost || currentPlayer.isHost) {
-      socketService.nextTurn(roomCode, currentPlayer.id);
-    }
+    offlineGameService.nextQuestion();
   };
 
   const handleCopyRoomCode = () => {
@@ -126,11 +117,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
     });
   };
 
-  const handleChooseAnotherNumber = () => {
-    setSelectedNumber(null);
+  const isHost = (playerId: string) => {
+    return playerId === currentHostId;
   };
-
-  const isHost = currentPlayer.id === currentHost || currentPlayer.isHost;
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 animate-fade-in">
@@ -140,22 +129,16 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
           className="flex items-center gap-2" 
           onClick={handleLeaveRoom}
         >
-          <ArrowLeft className="h-4 w-4" /> Leave Room
+          <ArrowLeft className="h-4 w-4" /> Leave Game
         </Button>
         
         <div className="flex items-center">
           <Badge 
             variant="outline" 
-            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 cursor-pointer hover:bg-opacity-70 transition-all flex items-center gap-2 px-3 py-1.5"
-            onClick={handleCopyRoomCode}
+            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5"
           >
-            <span className="font-mono tracking-wider">{roomCode}</span>
-            <Copy className="h-3.5 w-3.5 ml-1" />
-          </Badge>
-          
-          <Badge variant="outline" className="ml-2 bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5">
             <Users className="h-4 w-4" />
-            <span className="font-medium mr-1">{players.length}</span>
+            <span className="font-medium mr-1">{gamePlayers.length}</span>
           </Badge>
 
           <Badge variant="outline" className="ml-2 bg-icebreaker text-white flex items-center gap-1 px-3 py-1.5">
@@ -181,30 +164,49 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
         </CardContent>
       </Card>
       
-      <div className="mb-8">
-        <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
-          Enter a number:
-        </h3>
-        <NumberSelector 
-          onSelect={setSelectedNumber} 
-          selectedNumber={selectedNumber} 
-          min={1}
-          max={100}
-        />
-        
-        <div className="flex justify-center gap-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-          {selectedNumber !== null && (
-            <Button 
-              onClick={handleChooseNumber}
-              className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
-              size="lg"
-            >
-              <RefreshCw className="h-5 w-5 mr-1" />
-              Choose This Number
-            </Button>
-          )}
+      {selectedPlayerId ? (
+        <div className="mb-8">
+          <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
+            {gamePlayers.find(p => p.id === selectedPlayerId)?.name}, enter a number:
+          </h3>
+          <NumberSelector 
+            onSelect={setSelectedNumber} 
+            selectedNumber={selectedNumber} 
+            min={1}
+            max={100}
+          />
           
-          {isHost && (
+          <div className="flex justify-center gap-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            {selectedNumber !== null && (
+              <Button 
+                onClick={handleChooseNumber}
+                className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
+                size="lg"
+              >
+                <RefreshCw className="h-5 w-5 mr-1" />
+                Confirm Number
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mb-8 text-center animate-fade-in-up">
+          <h3 className="text-lg font-medium mb-4">Select a player to answer:</h3>
+          <div className="flex flex-wrap justify-center gap-2">
+            {gamePlayers.map(player => (
+              <Button
+                key={player.id}
+                variant={player.answer !== null && player.answer !== undefined ? "outline" : "default"}
+                className={`m-1 ${player.answer !== null && player.answer !== undefined ? "text-gray-500" : "bg-icebreaker hover:bg-icebreaker-dark"}`}
+                onClick={() => handlePlayerSelect(player.id)}
+                disabled={player.answer !== null && player.answer !== undefined}
+              >
+                {player.name}
+              </Button>
+            ))}
+          </div>
+          
+          <div className="mt-8">
             <Button 
               variant="outline"
               className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
@@ -212,33 +214,21 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, currentPlayer, catego
               size="lg"
             >
               <ArrowRight className="h-5 w-5 mr-1" />
-              Next Turn
-            </Button>
-          )}
-        </div>
-        
-        {selectedNumber !== null && (
-          <div className="flex justify-center mt-3">
-            <Button 
-              variant="ghost"
-              className="text-gray-500 hover:text-icebreaker"
-              onClick={handleChooseAnotherNumber}
-            >
-              Choose Another Number
+              Next Question
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       
       <div className="animate-fade-in-up">
         <h3 className="text-center text-lg font-medium mb-4">Players:</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-          {players.map(player => (
-            <Card key={player.id} className={`glass-card overflow-hidden ${player.id === currentPlayer.id ? 'ring-2 ring-icebreaker' : ''}`}>
+          {gamePlayers.map(player => (
+            <Card key={player.id} className="glass-card overflow-hidden">
               <CardHeader className="py-3 px-4">
                 <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
                   {player.name}
-                  {player.id === currentHost && (
+                  {isHost(player.id) && (
                     <Crown className="h-4 w-4 text-amber-500 ml-1" />
                   )}
                 </CardTitle>
