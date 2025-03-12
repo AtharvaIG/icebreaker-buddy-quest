@@ -1,4 +1,3 @@
-
 import os
 import uuid
 from flask import Flask, request, jsonify
@@ -9,10 +8,13 @@ from game_session import GameSession, Player
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'icebreaker-dev-key')
-CORS(app, origins="*")  # Allow requests from any origin
 
-# Initialize SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+# Configure CORS properly for deployment
+frontend_url = os.environ.get('FRONTEND_URL', '*')
+CORS(app, origins=frontend_url, supports_credentials=True)
+
+# Initialize SocketIO with proper CORS
+socketio = SocketIO(app, cors_allowed_origins=frontend_url, async_mode='eventlet', ping_timeout=60, ping_interval=25)
 
 # Store active game sessions
 active_sessions = {}
@@ -66,6 +68,11 @@ def join_room_api():
         'playerId': player_id,
         'isHost': False
     })
+
+# Health check endpoint
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
 
 # Socket.IO Events
 @socketio.on('connect')
