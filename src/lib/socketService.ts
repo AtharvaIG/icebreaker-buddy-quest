@@ -1,3 +1,4 @@
+
 import { io, Socket } from 'socket.io-client';
 import { toast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,6 +49,7 @@ class SocketService {
         reconnectionAttempts: MAX_RECONNECTION_ATTEMPTS,
         timeout: 10000,
         autoConnect: true,
+        withCredentials: false, // Important for CORS
       });
 
       this.socket.on('connect', () => {

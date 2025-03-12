@@ -1,16 +1,17 @@
-
 import os
 import uuid
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_cors import CORS
 from game_session import GameSession, Player
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'icebreaker-dev-key')
+CORS(app, origins="*")  # Allow requests from any origin
 
 # Initialize SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # Store active game sessions
 active_sessions = {}
@@ -292,4 +293,8 @@ def generate_room_code():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    print(f"Starting server on port {port}...")
+    # Use eventlet as the async mode for better WebSocket performance
+    import eventlet
+    eventlet.monkey_patch()
     socketio.run(app, host='0.0.0.0', port=port, debug=os.environ.get('DEBUG', 'False').lower() == 'true')
