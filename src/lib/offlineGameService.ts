@@ -1,5 +1,5 @@
 
-import { generatePlayerId, getRandomQuestion, getQuestionByNumber, generateNumberedQuestions } from './gameUtils';
+import { generatePlayerId, getRandomQuestion } from './gameUtils';
 
 export interface OfflinePlayer {
   id: string;
@@ -14,7 +14,6 @@ export interface OfflineGameState {
   roomCode: string;
   category: string;
   showQuestion: boolean;
-  questionMap: Map<number, string>;
 }
 
 class OfflineGameService {
@@ -22,16 +21,12 @@ class OfflineGameService {
   private listeners: { [key: string]: ((data: any) => void)[] } = {};
 
   initialize(roomCode: string, category: string): OfflineGameState {
-    // Generate the question map for this category
-    const questionMap = generateNumberedQuestions(category);
-
     this.gameState = {
       players: [],
       currentQuestion: getRandomQuestion(category),
       roomCode,
       category,
-      showQuestion: false,
-      questionMap
+      showQuestion: false
     };
     return this.gameState;
   }
@@ -75,16 +70,11 @@ class OfflineGameService {
     const playerIndex = this.gameState.players.findIndex(p => p.id === playerId);
     if (playerIndex !== -1) {
       this.gameState.players[playerIndex].answer = number;
-      
-      // Get the question associated with this number
-      const question = this.gameState.questionMap.get(number) || getRandomQuestion(this.gameState.category);
-      this.gameState.currentQuestion = question;
       this.gameState.showQuestion = true;
       
       this.emit('player_answered', { 
         playerId, 
-        answer: number,
-        question
+        answer: number 
       });
       this.emit('room_update', this.gameState);
     }
@@ -96,11 +86,12 @@ class OfflineGameService {
     // Reset all answers
     this.gameState.players.forEach(p => p.answer = null);
     
-    // Reset to the selection state 
+    // Get a new question
+    this.gameState.currentQuestion = getRandomQuestion(this.gameState.category);
     this.gameState.showQuestion = false;
     
     this.emit('new_question', {
-      question: "",
+      question: this.gameState.currentQuestion,
       players: this.gameState.players
     });
     this.emit('room_update', this.gameState);
