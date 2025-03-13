@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, UserPlus, User, X } from 'lucide-react';
+import { ArrowLeft, UserPlus, User, X, ArrowRight } from 'lucide-react';
 import { Player, generatePlayerId } from '@/lib/gameUtils';
 import { toast } from '@/components/ui/use-toast';
 
@@ -91,7 +91,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2" 
+          className="flex items-center gap-2 shadow-sm" 
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" /> Back
@@ -99,14 +99,14 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         
         <Badge 
           variant="outline" 
-          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5"
+          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm"
         >
           Room: <span className="font-mono tracking-wider">{roomCode}</span>
         </Badge>
       </div>
 
       <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2 tracking-tight">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark bg-clip-text text-transparent">
           Add Players
         </h1>
         <p className="text-lg text-gray-600 max-w-md mx-auto">
@@ -114,7 +114,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         </p>
       </div>
       
-      <Card className="mb-8 animate-fade-in-up">
+      <Card className="mb-8 animate-fade-in-up glass-card shadow-md">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
             Players
@@ -164,10 +164,11 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         <Button 
           onClick={handleContinue}
           disabled={players.length === 0}
-          className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300"
+          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark hover:from-icebreaker-dark hover:to-icebreaker-dark transition-all shadow-md"
           size="lg"
         >
           Continue
+          <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
     </div>

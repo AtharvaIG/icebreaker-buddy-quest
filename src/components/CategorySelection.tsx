@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
+  ArrowRight,
   Heart, 
   BriefcaseBusiness, 
   Pizza, 
@@ -43,7 +44,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2" 
+          className="flex items-center gap-2 shadow-sm" 
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" /> Back
@@ -51,14 +52,14 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
         
         <Badge 
           variant="outline" 
-          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5"
+          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm"
         >
           Room: <span className="font-mono tracking-wider">{roomCode}</span>
         </Badge>
       </div>
 
       <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2 tracking-tight">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark bg-clip-text text-transparent">
           Select a Category
         </h1>
         <p className="text-lg text-gray-600 max-w-md mx-auto">
@@ -72,7 +73,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
             key={category.id}
             className={`cursor-pointer transition-all duration-300 hover:shadow-md ${
               selectedCategory === category.id 
-                ? 'ring-2 ring-icebreaker bg-icebreaker bg-opacity-5' 
+                ? 'ring-2 ring-icebreaker bg-icebreaker bg-opacity-5 shadow-md' 
                 : 'glass-card hover:bg-icebreaker-light hover:bg-opacity-20'
             }`}
             onClick={() => setSelectedCategory(category.id)}
@@ -81,7 +82,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
               <div className="flex justify-center mb-2">
                 <div className={`p-2 rounded-full ${
                   selectedCategory === category.id 
-                    ? 'bg-icebreaker text-white' 
+                    ? 'bg-gradient-to-br from-icebreaker to-icebreaker-dark text-white shadow-md' 
                     : 'bg-icebreaker-light'
                 }`}>
                   {category.icon}
@@ -100,10 +101,11 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
         <Button 
           onClick={handleContinue}
           disabled={!selectedCategory}
-          className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300"
+          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark hover:from-icebreaker-dark hover:to-icebreaker-dark transition-all shadow-md"
           size="lg"
         >
           Continue
+          <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
     </div>

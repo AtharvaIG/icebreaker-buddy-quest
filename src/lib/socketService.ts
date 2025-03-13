@@ -1,189 +1,125 @@
 
-import { io, Socket } from "socket.io-client";
-import { toast } from "sonner";
+import { io, Socket } from 'socket.io-client';
 
-// Get the backend URL from environment or use a fallback for local development
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+// Type definitions
+export interface GameState {
+  players: Player[];
+  currentQuestion: string;
+  roomCode: string;
+  roomExists: boolean;
+  category?: string;
+}
+
+export interface Player {
+  id: string;
+  name: string;
+  answer: number | null;
+  isHost: boolean;
+}
 
 class SocketService {
   private socket: Socket | null = null;
-  private isConnecting = false;
-  private connectionTimeout: number | null = null;
+  private listeners: { [key: string]: ((data: any) => void)[] } = {};
 
-  // Connect to the WebSocket server
-  connect(): Promise<void> {
-    if (this.socket && this.socket.connected) {
-      return Promise.resolve();
-    }
+  public isConnected(): boolean {
+    return this.socket !== null && this.socket.connected;
+  }
 
-    if (this.isConnecting) {
-      return new Promise((resolve, reject) => {
-        const checkInterval = setInterval(() => {
-          if (this.socket && this.socket.connected) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          reject(new Error("Connection timeout"));
-        }, 5000);
-      });
-    }
-
-    this.isConnecting = true;
-
+  public connect(url: string): Promise<Socket> {
     return new Promise((resolve, reject) => {
-      try {
-        console.log(`Connecting to WebSocket server at ${BACKEND_URL}`);
-        
-        // Clear any existing timeout
-        if (this.connectionTimeout) {
-          clearTimeout(this.connectionTimeout);
-        }
+      this.socket = io(url, {
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
-        // Set a timeout for connection
-        this.connectionTimeout = window.setTimeout(() => {
-          this.isConnecting = false;
-          reject(new Error("Connection timeout"));
-        }, 10000) as unknown as number;
+      this.socket.on('connect', () => {
+        console.log('Connected to Socket.IO server');
+        resolve(this.socket as Socket);
+      });
 
-        // Initialize socket connection
-        this.socket = io(BACKEND_URL, {
-          transports: ["websocket", "polling"],
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-        });
-
-        // Handle connection events
-        this.socket.on("connect", () => {
-          console.log("WebSocket connected!");
-          this.isConnecting = false;
-          if (this.connectionTimeout) {
-            clearTimeout(this.connectionTimeout);
-          }
-          resolve();
-        });
-
-        this.socket.on("connect_error", (error) => {
-          console.error("WebSocket connection error:", error);
-          this.isConnecting = false;
-          if (this.connectionTimeout) {
-            clearTimeout(this.connectionTimeout);
-          }
-          reject(error);
-        });
-
-        this.socket.on("disconnect", (reason) => {
-          console.log(`WebSocket disconnected: ${reason}`);
-          if (reason === "io server disconnect") {
-            // Reconnect if the server disconnected us
-            this.socket?.connect();
-          }
-          // If the disconnection was caused by the user leaving the page, we don't need to show a toast
-          if (reason !== "transport close" && reason !== "client namespace disconnect") {
-            toast.error("Disconnected from the game server. Trying to reconnect...");
-          }
-        });
-
-      } catch (error) {
-        console.error("Error initializing socket:", error);
-        this.isConnecting = false;
-        if (this.connectionTimeout) {
-          clearTimeout(this.connectionTimeout);
-        }
+      this.socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
         reject(error);
-      }
+      });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('Disconnected from Socket.IO server:', reason);
+        
+        // This comparison fixes the TypeScript error TS2367
+        if (reason === 'io server disconnect') {
+          // The server has forcefully disconnected the socket
+          this.socket?.connect();
+        }
+      });
     });
   }
 
-  // Disconnect from the WebSocket server
-  disconnect(): void {
+  public disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
     }
   }
 
-  // Join a room
-  joinRoom(roomCode: string, playerId: string, playerName: string): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
+  public joinRoom(roomCode: string, playerName: string): void {
+    if (this.socket) {
+      this.socket.emit('join_room', { roomCode, playerName });
+    } else {
+      console.error('Socket not connected');
     }
-    
-    this.socket.emit("join_room", { roomCode, playerId, playerName });
   }
 
-  // Leave a room
-  leaveRoom(roomCode: string, playerId: string): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
-    }
-    
-    this.socket.emit("leave_room", { roomCode, playerId });
+  // Let's add this method to fix the TypeScript error in RoomJoin.tsx
+  public joinRoom_api(roomCode: string, playerName: string): void {
+    this.joinRoom(roomCode, playerName);
   }
 
-  // Select a category
-  selectCategory(roomCode: string, playerId: string, category: string): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
+  // Let's add this method to fix the TypeScript error in RoomCreation.tsx
+  public createRoom(category: string, playerName: string): void {
+    if (this.socket) {
+      this.socket.emit('create_room', { category, playerName });
+    } else {
+      console.error('Socket not connected');
     }
-    
-    this.socket.emit("select_category", { roomCode, playerId, category });
   }
 
-  // Select a number answer
-  selectNumber(roomCode: string, playerId: string, number: number): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
+  public selectNumber(number: number): void {
+    if (this.socket) {
+      this.socket.emit('select_number', { number });
+    } else {
+      console.error('Socket not connected');
     }
-    
-    this.socket.emit("select_number", { roomCode, playerId, number });
   }
 
-  // Move to the next question
-  nextTurn(roomCode: string, playerId: string): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
+  public requestNextQuestion(): void {
+    if (this.socket) {
+      this.socket.emit('next_question');
+    } else {
+      console.error('Socket not connected');
     }
-    
-    this.socket.emit("next_turn", { roomCode, playerId });
   }
 
-  // Register an event listener
-  on(event: string, callback: (data: any) => void): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
+  public on(event: string, callback: (data: any) => void): void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
     }
-    
-    this.socket.on(event, callback);
+    this.listeners[event].push(callback);
+
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
   }
 
-  // Remove an event listener
-  off(event: string): void {
-    if (!this.socket) {
-      console.error("Socket not connected");
-      return;
-    }
-    
-    this.socket.off(event);
-  }
+  public off(event: string, callback: (data: any) => void): void {
+    if (!this.listeners[event]) return;
+    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
 
-  // Check if the socket is connected
-  isConnected(): boolean {
-    return !!this.socket && this.socket.connected;
+    if (this.socket) {
+      this.socket.off(event, callback);
+    }
   }
 }
 
-// Create a singleton instance
 const socketService = new SocketService();
 export default socketService;

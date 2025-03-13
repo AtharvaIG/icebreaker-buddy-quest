@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import NumberSelector from './NumberSelector';
 import { Player } from '@/lib/gameUtils';
-import { ArrowLeft, ArrowRight, RefreshCw, Crown, MessageCircle, Copy, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Crown, MessageCircle, Copy, Users } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import offlineGameService from '@/lib/offlineGameService';
 
@@ -116,27 +116,37 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
     return playerId === currentHostId;
   };
 
+  const getPlayerStatus = (player: Player) => {
+    if (showQuestion) {
+      return player.answer !== null && player.answer !== undefined 
+        ? "Answered" 
+        : "Waiting for next question";
+    } else {
+      return "Waiting to select a number";
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 animate-fade-in">
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2" 
+          className="flex items-center gap-2 shadow-sm" 
           onClick={handleLeaveRoom}
         >
           <ArrowLeft className="h-4 w-4" /> Leave Game
         </Button>
         
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <Badge 
             variant="outline" 
-            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5"
+            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm"
           >
             <Users className="h-4 w-4" />
             <span className="font-medium mr-1">{gamePlayers.length}</span>
           </Badge>
 
-          <Badge variant="outline" className="ml-2 bg-icebreaker text-white flex items-center gap-1 px-3 py-1.5">
+          <Badge variant="outline" className="bg-icebreaker text-white flex items-center gap-1 px-3 py-1.5 shadow-sm">
             <div className="flex items-center">
               <span className="text-xs uppercase tracking-wider mr-1">Category:</span> 
               {category}
@@ -146,9 +156,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
       </div>
       
       {showQuestion ? (
-        <Card className="glass-card mb-8 overflow-hidden animate-fade-in">
+        <Card className="glass-card mb-8 overflow-hidden animate-fade-in shadow-md">
           <CardHeader className="bg-icebreaker bg-opacity-10 border-b border-icebreaker border-opacity-10">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3 mx-auto">
               <MessageCircle className="h-5 w-5 text-icebreaker-dark" />
             </div>
             <CardTitle className="text-center text-xl">Question</CardTitle>
@@ -160,13 +170,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
           </CardContent>
           <CardFooter className="pb-6 flex justify-center">
             <Button 
-              variant="outline"
-              className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
+              className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2 shadow-sm"
               onClick={handleNextTurn}
               size="lg"
             >
-              <ArrowRight className="h-5 w-5 mr-1" />
               Next Question
+              <ArrowRight className="h-5 w-5" />
             </Button>
           </CardFooter>
         </Card>
@@ -177,12 +186,21 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
             {gamePlayers.map(player => (
               <Button
                 key={player.id}
-                variant={player.answer !== null && player.answer !== undefined ? "outline" : "default"}
-                className={`m-1 ${player.answer !== null && player.answer !== undefined ? "text-gray-500" : "bg-icebreaker hover:bg-icebreaker-dark"}`}
+                variant={selectedPlayerId === player.id ? "default" : player.answer !== null && player.answer !== undefined ? "outline" : "default"}
+                className={`m-1 ${
+                  selectedPlayerId === player.id 
+                    ? "bg-icebreaker-dark hover:bg-icebreaker-dark ring-2 ring-icebreaker-light" 
+                    : player.answer !== null && player.answer !== undefined 
+                      ? "text-gray-500" 
+                      : "bg-icebreaker hover:bg-icebreaker-dark"
+                } shadow-sm transition-all`}
                 onClick={() => handlePlayerSelect(player.id)}
                 disabled={player.answer !== null && player.answer !== undefined}
               >
                 {player.name}
+                {isHost(player.id) && (
+                  <Crown className="h-4 w-4 text-amber-500 ml-1" />
+                )}
               </Button>
             ))}
           </div>
@@ -207,8 +225,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
         <h3 className="text-center text-lg font-medium mb-4">Players:</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           {gamePlayers.map(player => (
-            <Card key={player.id} className="glass-card overflow-hidden">
-              <CardHeader className="py-3 px-4">
+            <Card key={player.id} className="glass-card overflow-hidden shadow-sm hover:shadow-md transition-all">
+              <CardHeader className="py-3 px-4 bg-gradient-to-b from-white to-transparent">
                 <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
                   {player.name}
                   {isHost(player.id) && (
@@ -216,12 +234,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="py-2 text-center">
+              <CardContent className="py-3 text-center">
                 {player.answer !== null && player.answer !== undefined ? (
                   <Badge className="bg-icebreaker">{player.answer}</Badge>
                 ) : (
                   <span className="text-gray-400 text-sm">No answer yet</span>
                 )}
+                <p className="text-xs text-gray-500 mt-2">{getPlayerStatus(player)}</p>
               </CardContent>
             </Card>
           ))}

@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { ChevronRight } from 'lucide-react';
 
 interface NumberSelectorProps {
   onSelect: (number: number) => void;
@@ -18,6 +18,12 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
   max = 100 
 }) => {
   const [inputValue, setInputValue] = useState<string>(selectedNumber?.toString() || '');
+  
+  useEffect(() => {
+    if (selectedNumber !== null) {
+      setInputValue(selectedNumber.toString());
+    }
+  }, [selectedNumber]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -36,13 +42,13 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-4 mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-      <div className="flex w-full max-w-xs gap-2">
+      <div className="flex w-full max-w-xs gap-3">
         <Input
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="Enter a number"
-          className="text-center text-lg"
+          placeholder={`Enter a number (${min}-${max})`}
+          className="text-center text-lg shadow-sm"
           aria-label="Enter a number"
           min={min}
           max={max}
@@ -51,18 +57,20 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
               handleSubmit();
             }
           }}
+          autoFocus
         />
         <Button 
           onClick={handleSubmit}
-          className="bg-icebreaker hover:bg-icebreaker-dark"
+          className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 shadow-sm"
           disabled={!inputValue}
         >
-          Select
+          <span>Select</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
       
       {selectedNumber !== null && (
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-icebreaker text-white text-2xl font-bold mt-2">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-icebreaker text-white text-2xl font-bold mt-2 shadow-md animate-scale-in">
           {selectedNumber}
         </div>
       )}

@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react';
+import { Users, ArrowRight } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onGameStart: () => void;
@@ -12,7 +12,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
   return (
     <div className="container max-w-md mx-auto py-16 px-4 animate-fade-in">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+        <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-icebreaker to-icebreaker-dark bg-clip-text text-transparent">
           Icebreaker
         </h1>
         <p className="text-xl text-gray-600">
@@ -20,10 +20,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
         </p>
       </div>
 
-      <Card className="glass-card animate-fade-in-up">
+      <Card className="glass-card animate-fade-in-up shadow-md">
         <CardHeader>
           <div className="flex justify-center">
-            <div className="p-3 bg-icebreaker rounded-full">
+            <div className="p-3 bg-gradient-to-br from-icebreaker to-icebreaker-dark rounded-full shadow-md">
               <Users className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -39,10 +39,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
 
           <Button
             onClick={onGameStart}
-            className="bg-icebreaker hover:bg-icebreaker-dark transition-colors w-full"
+            className="bg-gradient-to-r from-icebreaker to-icebreaker-dark hover:from-icebreaker-dark hover:to-icebreaker-dark transition-all w-full shadow-md"
             size="lg"
           >
             Start Game
+            <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </CardContent>
       </Card>
