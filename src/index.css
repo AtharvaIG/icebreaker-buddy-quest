@@ -39,33 +39,33 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 47% 15%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 198 93% 60%;
+    --primary: 260 84% 74%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 260 25% 25%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 260 25% 20%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 260 25% 20%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 198 93% 60%;
+    --border: 260 25% 25%;
+    --input: 260 25% 25%;
+    --ring: 260 84% 74%;
   }
 }
 
@@ -85,7 +85,11 @@
     overflow-x: hidden;
     background-image: radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.1), transparent),
                       linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(240, 249, 255, 0.8));
-    background-attachment: fixed;
+  }
+
+  body.dark {
+    background-image: radial-gradient(circle at 80% 20%, rgba(155, 135, 245, 0.15), transparent),
+                      linear-gradient(to bottom, rgba(26, 31, 44, 0.9), rgba(34, 31, 38, 0.9));
   }
 
   #root {
@@ -100,8 +104,16 @@
   @apply bg-white bg-opacity-60 backdrop-blur-md border border-white border-opacity-20 shadow-sm transition-all duration-300;
 }
 
+.dark .glass-card {
+  @apply bg-gray-900 bg-opacity-30 backdrop-blur-md border border-purple-300 border-opacity-10 shadow-md transition-all duration-300;
+}
+
 .glass-card:hover {
   @apply bg-opacity-70 shadow-md;
+}
+
+.dark .glass-card:hover {
+  @apply bg-opacity-40 shadow-lg;
 }
 
 .number-button {
@@ -114,6 +126,10 @@
 
 .number-button.selected {
   @apply bg-icebreaker text-white;
+}
+
+.dark .number-button.selected {
+  @apply bg-purple-DEFAULT text-white;
 }
 
 .slide-transition {
@@ -137,4 +153,21 @@
 
 .animate-scale-in {
   animation: scale-in 0.3s ease-out forwards;
+}
+
+/* Interactive button styles */
+.interactive-button {
+  @apply transition-all duration-300 transform hover:scale-105 active:scale-95;
+}
+
+.theme-toggle {
+  @apply fixed top-4 right-4 p-2 rounded-full bg-white dark:bg-gray-800 shadow-md z-10 transition-all duration-300;
+}
+
+.dark .theme-toggle {
+  @apply bg-gray-800 border border-purple-300 border-opacity-20;
+}
+
+.theme-toggle:hover {
+  @apply transform rotate-12;
 }

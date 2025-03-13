@@ -1,77 +1,54 @@
-
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Plus } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import socketService from '@/lib/socketService';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface RoomCreationProps {
-  onRoomCreated: (roomCode: string, playerName: string, playerId: string) => void;
+  onBack: () => void;
+  onRoomCreated: (roomCode: string, playerId: string) => void;
 }
 
-const RoomCreation: React.FC<RoomCreationProps> = ({ onRoomCreated }) => {
+const RoomCreation: React.FC<RoomCreationProps> = ({ onBack, onRoomCreated }) => {
   const [playerName, setPlayerName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleCreateRoom = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!playerName.trim()) return;
-    
-    setIsLoading(true);
-    
-    try {
-      // Call the actual API through our socket service
-      const result = await socketService.createRoom(playerName);
-      onRoomCreated(result.roomCode, playerName, result.playerId);
-    } catch (error) {
-      console.error('Failed to create room:', error);
-      toast({
-        title: "Failed to Create Room",
-        description: "There was an error creating the room. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Placeholder for room creation logic
+    // Will be implemented when online functionality is added
   };
 
   return (
-    <Card className="w-full max-w-md glass-card animate-fade-in-up">
-      <CardHeader>
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-4">
-          <Plus className="h-5 w-5 text-icebreaker-dark" />
+    <div className="flex justify-center items-center min-h-screen p-4">
+      <Card className="w-full max-w-md">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-center mb-6">Create a Room</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="playerName">Your Name</Label>
+                <Input
+                  id="playerName"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="Enter your name"
+                  required
+                />
+              </div>
+              <div className="flex justify-between pt-4">
+                <Button type="button" variant="outline" onClick={onBack}>
+                  Back
+                </Button>
+                <Button type="submit" disabled={!playerName || isCreating}>
+                  {isCreating ? 'Creating...' : 'Create Room'}
+                </Button>
+              </div>
+            </div>
+          </form>
         </div>
-        <CardTitle className="text-center text-xl">Create a Room</CardTitle>
-        <CardDescription className="text-center">
-          Start a new icebreaker session
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleCreateRoom}>
-        <CardContent>
-          <div className="mb-4">
-            <Input
-              placeholder="Your name"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="transition-all duration-300 focus:ring-2 focus:ring-icebreaker"
-              required
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button 
-            type="submit" 
-            className="w-full bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Creating...' : 'Create Room'}
-            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
