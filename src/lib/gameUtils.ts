@@ -117,6 +117,53 @@ export const defaultQuestions = [
   "If you could have any superpower, what would it be?",
 ];
 
+// Generate numbered questions map (1-100) for each category
+export function generateNumberedQuestions(category: string): Map<number, string> {
+  const questionMap = new Map<number, string>();
+  const allQuestions: string[] = [];
+  
+  // First, add all questions from the specified category
+  if (questionsMap[category as keyof typeof questionsMap]) {
+    allQuestions.push(...questionsMap[category as keyof typeof questionsMap]);
+  }
+  
+  // Then add questions from other categories to fill up to 100
+  const categories = Object.keys(questionsMap);
+  let currentCategoryIndex = 0;
+  
+  while (allQuestions.length < 100) {
+    // Skip the specified category as we've already added it
+    if (categories[currentCategoryIndex] === category) {
+      currentCategoryIndex = (currentCategoryIndex + 1) % categories.length;
+      continue;
+    }
+    
+    const currentCategory = categories[currentCategoryIndex];
+    const categoryQuestions = questionsMap[currentCategory as keyof typeof questionsMap];
+    
+    for (const question of categoryQuestions) {
+      if (!allQuestions.includes(question)) {
+        allQuestions.push(question);
+        if (allQuestions.length >= 100) break;
+      }
+    }
+    
+    currentCategoryIndex = (currentCategoryIndex + 1) % categories.length;
+  }
+  
+  // Shuffle the questions to make the distribution random
+  const shuffledQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+  
+  // Map each number to a question
+  for (let i = 1; i <= 100; i++) {
+    // Use modulo to cycle through available questions if we have fewer than 100
+    const questionIndex = (i - 1) % shuffledQuestions.length;
+    questionMap.set(i, shuffledQuestions[questionIndex]);
+  }
+  
+  return questionMap;
+}
+
 /**
  * Generate a random 6-character room code
  */
@@ -138,6 +185,14 @@ export function getRandomQuestion(category?: string): string {
     return categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
   }
   return defaultQuestions[Math.floor(Math.random() * defaultQuestions.length)];
+}
+
+/**
+ * Get a specific question based on selected number and category
+ */
+export function getQuestionByNumber(number: number, category: string): string {
+  const questionMap = generateNumberedQuestions(category);
+  return questionMap.get(number) || getRandomQuestion(category);
 }
 
 /**

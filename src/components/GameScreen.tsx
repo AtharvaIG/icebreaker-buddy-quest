@@ -48,6 +48,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
             : player
         )
       );
+      
+      // Show the question associated with this number
+      if (data.question) {
+        setQuestion(data.question);
+      }
     };
 
     const newQuestionHandler = (data: any) => {
@@ -161,7 +166,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3 mx-auto dark:bg-purple dark:bg-opacity-20">
               <MessageCircle className="h-5 w-5 text-icebreaker-dark dark:text-purple-light" />
             </div>
-            <CardTitle className="text-center text-xl">Question</CardTitle>
+            <CardTitle className="text-center text-xl">Question #{selectedNumber}</CardTitle>
           </CardHeader>
           <CardContent className="pt-6 pb-8">
             <p className="text-2xl font-medium text-center px-4 animate-fade-in">
