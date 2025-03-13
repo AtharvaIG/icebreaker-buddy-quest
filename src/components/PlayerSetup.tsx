@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, UserPlus, User, X, ArrowRight } from 'lucide-react';
 import { Player, generatePlayerId } from '@/lib/gameUtils';
 import { toast } from '@/components/ui/use-toast';
+import ThemeToggle from './ThemeToggle';
 
 interface PlayerSetupProps {
   onComplete: (players: Player[]) => void;
@@ -88,10 +89,12 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 animate-fade-in">
+      <ThemeToggle />
+      
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2 shadow-sm" 
+          className="flex items-center gap-2 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" 
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" /> Back
@@ -99,17 +102,17 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         
         <Badge 
           variant="outline" 
-          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm"
+          className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm dark:bg-gray-800 dark:bg-opacity-50 dark:border-purple-300 dark:border-opacity-20"
         >
           Room: <span className="font-mono tracking-wider">{roomCode}</span>
         </Badge>
       </div>
 
       <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-light dark:to-purple bg-clip-text text-transparent">
           Add Players
         </h1>
-        <p className="text-lg text-gray-600 max-w-md mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md mx-auto">
           Enter names for all players (1-4)
         </p>
       </div>
@@ -122,7 +125,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
               onClick={handleAddPlayer}
               disabled={players.length >= 4}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
             >
               <UserPlus className="h-4 w-4" /> Add Player
             </Button>
@@ -131,25 +134,25 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         <CardContent>
           {players.map((player, index) => (
             <div key={player.id} className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-icebreaker bg-opacity-10">
-                <User className="h-4 w-4 text-icebreaker" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-icebreaker bg-opacity-10 dark:bg-purple dark:bg-opacity-10">
+                <User className="h-4 w-4 text-icebreaker dark:text-purple-light" />
               </div>
               
               <Input
                 placeholder={`Player ${index + 1} name`}
                 value={player.name}
                 onChange={(e) => handleUpdatePlayerName(player.id, e.target.value)}
-                className="flex-1"
+                className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:placeholder:text-gray-500"
                 maxLength={20}
               />
               
               {player.isHost && (
-                <Badge className="bg-amber-500">Host</Badge>
+                <Badge className="bg-amber-500 dark:bg-amber-500 dark:text-gray-900">Host</Badge>
               )}
               
               <Button 
                 variant="ghost" 
-                className="p-1 h-auto"
+                className="p-1 h-auto dark:text-gray-400 dark:hover:text-gray-200"
                 onClick={() => handleRemovePlayer(player.id)}
                 disabled={players.length <= 1}
               >
@@ -164,7 +167,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onComplete, onBack, roomCode 
         <Button 
           onClick={handleContinue}
           disabled={players.length === 0}
-          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark hover:from-icebreaker-dark hover:to-icebreaker-dark transition-all shadow-md"
+          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark hover:from-icebreaker-dark hover:to-icebreaker-dark dark:hover:from-purple-dark dark:hover:to-purple-dark transition-all shadow-md"
           size="lg"
         >
           Continue

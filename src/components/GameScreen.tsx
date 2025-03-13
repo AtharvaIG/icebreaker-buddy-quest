@@ -131,7 +131,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2 shadow-sm" 
+          className="flex items-center gap-2 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" 
           onClick={handleLeaveRoom}
         >
           <ArrowLeft className="h-4 w-4" /> Leave Game
@@ -140,13 +140,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
         <div className="flex items-center gap-3">
           <Badge 
             variant="outline" 
-            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm"
+            className="bg-white bg-opacity-50 backdrop-blur-sm border-opacity-20 flex items-center gap-2 px-3 py-1.5 shadow-sm dark:bg-gray-800 dark:bg-opacity-50 dark:border-gray-700"
           >
             <Users className="h-4 w-4" />
             <span className="font-medium mr-1">{gamePlayers.length}</span>
           </Badge>
 
-          <Badge variant="outline" className="bg-icebreaker text-white flex items-center gap-1 px-3 py-1.5 shadow-sm">
+          <Badge variant="outline" className="bg-icebreaker text-white dark:bg-purple flex items-center gap-1 px-3 py-1.5 shadow-sm">
             <div className="flex items-center">
               <span className="text-xs uppercase tracking-wider mr-1">Category:</span> 
               {category}
@@ -157,9 +157,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
       
       {showQuestion ? (
         <Card className="glass-card mb-8 overflow-hidden animate-fade-in shadow-md">
-          <CardHeader className="bg-icebreaker bg-opacity-10 border-b border-icebreaker border-opacity-10">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3 mx-auto">
-              <MessageCircle className="h-5 w-5 text-icebreaker-dark" />
+          <CardHeader className="bg-icebreaker bg-opacity-10 border-b border-icebreaker border-opacity-10 dark:bg-gray-800 dark:bg-opacity-50 dark:border-purple dark:border-opacity-20">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3 mx-auto dark:bg-purple dark:bg-opacity-20">
+              <MessageCircle className="h-5 w-5 text-icebreaker-dark dark:text-purple-light" />
             </div>
             <CardTitle className="text-center text-xl">Question</CardTitle>
           </CardHeader>
@@ -170,7 +170,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
           </CardContent>
           <CardFooter className="pb-6 flex justify-center">
             <Button 
-              className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2 shadow-sm"
+              className="bg-icebreaker hover:bg-icebreaker-dark dark:bg-purple dark:hover:bg-purple-dark transition-all duration-300 flex items-center gap-2 shadow-sm"
               onClick={handleNextTurn}
               size="lg"
             >
@@ -189,10 +189,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
                 variant={selectedPlayerId === player.id ? "default" : player.answer !== null && player.answer !== undefined ? "outline" : "default"}
                 className={`m-1 ${
                   selectedPlayerId === player.id 
-                    ? "bg-icebreaker-dark hover:bg-icebreaker-dark ring-2 ring-icebreaker-light" 
+                    ? "bg-icebreaker-dark dark:bg-purple-dark hover:bg-icebreaker-dark dark:hover:bg-purple-dark ring-2 ring-icebreaker-light dark:ring-purple-light" 
                     : player.answer !== null && player.answer !== undefined 
-                      ? "text-gray-500" 
-                      : "bg-icebreaker hover:bg-icebreaker-dark"
+                      ? "text-gray-500 dark:text-gray-400" 
+                      : "bg-icebreaker hover:bg-icebreaker-dark dark:bg-purple dark:hover:bg-purple-dark"
                 } shadow-sm transition-all`}
                 onClick={() => handlePlayerSelect(player.id)}
                 disabled={player.answer !== null && player.answer !== undefined}
@@ -226,7 +226,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           {gamePlayers.map(player => (
             <Card key={player.id} className="glass-card overflow-hidden shadow-sm hover:shadow-md transition-all">
-              <CardHeader className="py-3 px-4 bg-gradient-to-b from-white to-transparent">
+              <CardHeader className="py-3 px-4 bg-gradient-to-b from-white to-transparent dark:from-gray-800 dark:to-transparent">
                 <CardTitle className="text-center text-base truncate flex items-center justify-center gap-1">
                   {player.name}
                   {isHost(player.id) && (
@@ -236,11 +236,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
               </CardHeader>
               <CardContent className="py-3 text-center">
                 {player.answer !== null && player.answer !== undefined ? (
-                  <Badge className="bg-icebreaker">{player.answer}</Badge>
+                  <Badge className="bg-icebreaker dark:bg-purple">{player.answer}</Badge>
                 ) : (
                   <span className="text-gray-400 text-sm">No answer yet</span>
                 )}
-                <p className="text-xs text-gray-500 mt-2">{getPlayerStatus(player)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{getPlayerStatus(player)}</p>
               </CardContent>
             </Card>
           ))}

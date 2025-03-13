@@ -102,7 +102,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-900">
       {!gameState.inPlayerSetup && !gameState.inCategorySelection && !gameState.inGame ? (
         <WelcomeScreen onGameStart={handleStartSetup} />
       ) : gameState.inPlayerSetup ? (

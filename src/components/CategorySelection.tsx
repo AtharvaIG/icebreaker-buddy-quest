@@ -47,7 +47,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
       <div className="flex justify-between items-center mb-8">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2 shadow-sm interactive-button dark:bg-gray-800 dark:border-gray-700" 
+          className="flex items-center gap-2 shadow-sm interactive-button dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" 
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" /> Back
@@ -62,7 +62,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
       </div>
 
       <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-light dark:to-purple-DEFAULT bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold mb-2 tracking-tight bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-light dark:to-purple bg-clip-text text-transparent">
           Select a Category
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md mx-auto">
@@ -76,7 +76,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
             key={category.id}
             className={`cursor-pointer transition-all duration-300 hover:shadow-md interactive-button ${
               selectedCategory === category.id 
-                ? 'ring-2 ring-icebreaker dark:ring-purple-DEFAULT bg-icebreaker bg-opacity-5 dark:bg-purple-DEFAULT dark:bg-opacity-10 shadow-md' 
+                ? 'ring-2 ring-icebreaker dark:ring-purple bg-icebreaker bg-opacity-5 dark:bg-purple dark:bg-opacity-10 shadow-md' 
                 : 'glass-card hover:bg-icebreaker-light hover:bg-opacity-20 dark:hover:bg-purple-dark dark:hover:bg-opacity-10'
             }`}
             onClick={() => setSelectedCategory(category.id)}
@@ -85,7 +85,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
               <div className="flex justify-center mb-2">
                 <div className={`p-2 rounded-full ${
                   selectedCategory === category.id 
-                    ? 'bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple-DEFAULT dark:to-purple-dark text-white shadow-md' 
+                    ? 'bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark text-white shadow-md' 
                     : 'bg-icebreaker-light dark:bg-gray-800'
                 }`}>
                   {category.icon}
@@ -104,7 +104,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onCategorySelect,
         <Button 
           onClick={handleContinue}
           disabled={!selectedCategory}
-          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-DEFAULT dark:to-purple-dark hover:from-icebreaker-dark hover:to-icebreaker-dark dark:hover:from-purple-dark dark:hover:to-purple-dark transition-all shadow-md interactive-button group"
+          className="bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark hover:from-icebreaker-dark hover:to-icebreaker-dark dark:hover:from-purple-dark dark:hover:to-purple-dark transition-all shadow-md interactive-button group"
           size="lg"
         >
           Continue

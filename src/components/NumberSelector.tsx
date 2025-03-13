@@ -102,7 +102,7 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
         
         <Button 
           onClick={handleSubmit}
-          className="bg-icebreaker hover:bg-icebreaker-dark dark:bg-purple-DEFAULT dark:hover:bg-purple-dark transition-all duration-300 shadow-sm interactive-button"
+          className="bg-icebreaker hover:bg-icebreaker-dark dark:bg-purple dark:hover:bg-purple-dark transition-all duration-300 shadow-sm interactive-button"
           disabled={!inputValue || isNaN(numValue) || numValue < min || numValue > max}
         >
           <span>Select</span>
@@ -123,7 +123,7 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({
       )}
       
       {selectedNumber !== null && (
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-icebreaker dark:bg-purple-DEFAULT text-white text-2xl font-bold mt-2 shadow-md animate-bounce-subtle">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-icebreaker dark:bg-purple text-white text-2xl font-bold mt-2 shadow-md animate-bounce-subtle">
           {selectedNumber}
         </div>
       )}
