@@ -129,7 +129,7 @@
 }
 
 .dark .number-button.selected {
-  @apply bg-purple-DEFAULT text-white;
+  @apply bg-purple text-white;
 }
 
 .slide-transition {

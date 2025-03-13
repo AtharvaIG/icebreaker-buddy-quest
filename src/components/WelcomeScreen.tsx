@@ -15,7 +15,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
       <ThemeToggle />
       
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-light dark:to-purple-DEFAULT bg-clip-text text-transparent">
+        <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-light dark:to-purple bg-clip-text text-transparent">
           Icebreaker
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300">
@@ -26,7 +26,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
       <Card className="glass-card animate-fade-in-up shadow-md">
         <CardHeader>
           <div className="flex justify-center">
-            <div className="p-3 bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple-DEFAULT dark:to-purple-dark rounded-full shadow-md">
+            <div className="p-3 bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark rounded-full shadow-md">
               <Users className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -42,7 +42,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
 
           <Button
             onClick={onGameStart}
-            className="bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple-DEFAULT dark:to-purple-dark hover:from-icebreaker-dark hover:to-icebreaker-dark dark:hover:from-purple-dark dark:hover:to-purple-dark transition-all w-full shadow-md interactive-button group"
+            className="bg-gradient-to-r from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark hover:from-icebreaker-dark hover:to-icebreaker-dark dark:hover:from-purple-dark dark:hover:to-purple-dark transition-all w-full shadow-md interactive-button group"
             size="lg"
           >
             <span className="flex items-center gap-2">
