@@ -13,6 +13,7 @@ export interface OfflineGameState {
   currentQuestion: string;
   roomCode: string;
   category: string;
+  showQuestion: boolean;
 }
 
 class OfflineGameService {
@@ -24,7 +25,8 @@ class OfflineGameService {
       players: [],
       currentQuestion: getRandomQuestion(category),
       roomCode,
-      category
+      category,
+      showQuestion: false
     };
     return this.gameState;
   }
@@ -68,6 +70,8 @@ class OfflineGameService {
     const playerIndex = this.gameState.players.findIndex(p => p.id === playerId);
     if (playerIndex !== -1) {
       this.gameState.players[playerIndex].answer = number;
+      this.gameState.showQuestion = true;
+      
       this.emit('player_answered', { 
         playerId, 
         answer: number 
@@ -84,6 +88,7 @@ class OfflineGameService {
     
     // Get a new question
     this.gameState.currentQuestion = getRandomQuestion(this.gameState.category);
+    this.gameState.showQuestion = false;
     
     this.emit('new_question', {
       question: this.gameState.currentQuestion,

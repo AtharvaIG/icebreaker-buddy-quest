@@ -22,6 +22,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
   const [gamePlayers, setGamePlayers] = useState<Player[]>(players);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [currentHostId, setCurrentHostId] = useState<string | null>(null);
+  const [showQuestion, setShowQuestion] = useState<boolean>(false);
 
   useEffect(() => {
     // Set up offline game event listeners
@@ -30,6 +31,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
       if (data.currentQuestion) {
         setQuestion(data.currentQuestion);
       }
+      setShowQuestion(data.showQuestion);
       // Find current host
       const host = data.players?.find((p: Player) => p.isHost);
       if (host) {
@@ -69,6 +71,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
     if (gameState) {
       setQuestion(gameState.currentQuestion);
       setGamePlayers(gameState.players);
+      setShowQuestion(gameState.showQuestion);
       const host = gameState.players.find(p => p.isHost);
       if (host) {
         setCurrentHostId(host.id);
@@ -91,30 +94,22 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
     setSelectedPlayerId(playerId);
   };
 
-  const handleChooseNumber = () => {
-    if (selectedNumber === null || selectedPlayerId === null) return;
+  const handleNumberSelect = (number: number) => {
+    if (selectedPlayerId === null) return;
     
-    offlineGameService.selectNumber(selectedPlayerId, selectedNumber);
+    setSelectedNumber(number);
+    offlineGameService.selectNumber(selectedPlayerId, number);
     
     toast({
       title: "Number Selected",
-      description: `${gamePlayers.find(p => p.id === selectedPlayerId)?.name} chose ${selectedNumber}`,
+      description: `${gamePlayers.find(p => p.id === selectedPlayerId)?.name} chose ${number}`,
     });
-    
-    setSelectedNumber(null);
-    setSelectedPlayerId(null);
   };
 
   const handleNextTurn = () => {
     offlineGameService.nextQuestion();
-  };
-
-  const handleCopyRoomCode = () => {
-    navigator.clipboard.writeText(roomCode);
-    toast({
-      title: "Room Code Copied",
-      description: "Share this with your friends to join",
-    });
+    setSelectedNumber(null);
+    setSelectedPlayerId(null);
   };
 
   const isHost = (playerId: string) => {
@@ -150,48 +145,34 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
         </div>
       </div>
       
-      <Card className="glass-card mb-8 overflow-hidden">
-        <CardHeader className="bg-icebreaker bg-opacity-10 border-b border-icebreaker border-opacity-10">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3">
-            <MessageCircle className="h-5 w-5 text-icebreaker-dark" />
-          </div>
-          <CardTitle className="text-center text-xl">Question</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6 pb-8">
-          <p className="text-2xl font-medium text-center px-4 animate-fade-in">
-            {question || "Waiting for the first question..."}
-          </p>
-        </CardContent>
-      </Card>
-      
-      {selectedPlayerId ? (
-        <div className="mb-8">
-          <h3 className="text-center text-lg font-medium mb-4 animate-fade-in-up">
-            {gamePlayers.find(p => p.id === selectedPlayerId)?.name}, enter a number:
-          </h3>
-          <NumberSelector 
-            onSelect={setSelectedNumber} 
-            selectedNumber={selectedNumber} 
-            min={1}
-            max={100}
-          />
-          
-          <div className="flex justify-center gap-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            {selectedNumber !== null && (
-              <Button 
-                onClick={handleChooseNumber}
-                className="bg-icebreaker hover:bg-icebreaker-dark transition-all duration-300 flex items-center gap-2"
-                size="lg"
-              >
-                <RefreshCw className="h-5 w-5 mr-1" />
-                Confirm Number
-              </Button>
-            )}
-          </div>
-        </div>
+      {showQuestion ? (
+        <Card className="glass-card mb-8 overflow-hidden animate-fade-in">
+          <CardHeader className="bg-icebreaker bg-opacity-10 border-b border-icebreaker border-opacity-10">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-icebreaker-light mb-3">
+              <MessageCircle className="h-5 w-5 text-icebreaker-dark" />
+            </div>
+            <CardTitle className="text-center text-xl">Question</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 pb-8">
+            <p className="text-2xl font-medium text-center px-4 animate-fade-in">
+              {question || "Waiting for the first question..."}
+            </p>
+          </CardContent>
+          <CardFooter className="pb-6 flex justify-center">
+            <Button 
+              variant="outline"
+              className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
+              onClick={handleNextTurn}
+              size="lg"
+            >
+              <ArrowRight className="h-5 w-5 mr-1" />
+              Next Question
+            </Button>
+          </CardFooter>
+        </Card>
       ) : (
         <div className="mb-8 text-center animate-fade-in-up">
-          <h3 className="text-lg font-medium mb-4">Select a player to answer:</h3>
+          <h3 className="text-lg font-medium mb-4">Select a player to roll:</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {gamePlayers.map(player => (
               <Button
@@ -205,18 +186,20 @@ const GameScreen: React.FC<GameScreenProps> = ({ roomCode, players, category, on
               </Button>
             ))}
           </div>
-          
-          <div className="mt-8">
-            <Button 
-              variant="outline"
-              className="border-icebreaker text-icebreaker hover:bg-icebreaker hover:text-white transition-all duration-300 flex items-center gap-2"
-              onClick={handleNextTurn}
-              size="lg"
-            >
-              <ArrowRight className="h-5 w-5 mr-1" />
-              Next Question
-            </Button>
-          </div>
+        </div>
+      )}
+      
+      {selectedPlayerId && !showQuestion && (
+        <div className="mb-8 animate-fade-in-up">
+          <h3 className="text-center text-lg font-medium mb-4">
+            {gamePlayers.find(p => p.id === selectedPlayerId)?.name}, enter a number:
+          </h3>
+          <NumberSelector 
+            onSelect={handleNumberSelect} 
+            selectedNumber={selectedNumber} 
+            min={1}
+            max={100}
+          />
         </div>
       )}
       
