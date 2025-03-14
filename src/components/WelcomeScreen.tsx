@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, ArrowRight, Sparkles, Heart, Star } from 'lucide-react';
+import { Users, ArrowRight, Sparkles, GamepadIcon, Zap, Star } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 interface WelcomeScreenProps {
@@ -10,6 +10,8 @@ interface WelcomeScreenProps {
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
+  const [isHovering, setIsHovering] = useState(false);
+  
   return (
     <div className="container max-w-md mx-auto py-16 px-4 animate-fade-in relative">
       <ThemeToggle />
@@ -31,25 +33,30 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
         </p>
       </div>
 
-      <Card className="glass-card animate-fade-in-up shadow-xl hover:shadow-2xl transition-all border-2 border-icebreaker-light dark:border-purple-dark border-opacity-20 dark:border-opacity-30 overflow-hidden">
+      <Card 
+        className={`glass-card animate-fade-in-up shadow-xl hover:shadow-2xl transition-all border-2 border-icebreaker-light dark:border-purple-dark border-opacity-20 dark:border-opacity-30 overflow-hidden ${isHovering ? 'transform scale-[1.02]' : ''}`}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark opacity-10 rounded-full blur-xl pointer-events-none"></div>
         <CardHeader>
-          <div className="flex justify-center">
-            <div className="p-3 bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark rounded-xl shadow-md rotate-3 hover:rotate-0 transition-all duration-300">
-              <Users className="h-6 w-6 text-white" />
+          <div className={`flex justify-center transition-all duration-500 ${isHovering ? 'transform rotate-6' : ''}`}>
+            <div className="p-3 bg-gradient-to-br from-icebreaker to-icebreaker-dark dark:from-purple dark:to-purple-dark rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <GamepadIcon className={`h-6 w-6 text-white transition-all duration-300 ${isHovering ? 'animate-pulse-subtle' : ''}`} />
             </div>
           </div>
           <CardTitle className="text-center text-xl mt-2 flex items-center justify-center gap-2">
-            <Heart className="h-4 w-4 text-pink-500 animate-pulse-subtle" />
-            Play Together
-            <Heart className="h-4 w-4 text-pink-500 animate-pulse-subtle" />
+            <span className={`transition-all duration-300 ${isHovering ? 'text-icebreaker dark:text-purple' : ''}`}>
+              Play Together
+            </span>
+            <Zap className={`h-4 w-4 text-yellow-500 transition-all duration-300 ${isHovering ? 'animate-pulse-subtle' : 'opacity-0'}`} />
           </CardTitle>
           <CardDescription className="text-center">
             Fun questions to spark interesting conversations
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="mb-6 dark:text-gray-300">
+          <p className={`mb-6 dark:text-gray-300 transition-all duration-300 ${isHovering ? 'transform translate-y-[-4px]' : ''}`}>
             Add player names, pick a category, and discover something new about each other!
           </p>
 
@@ -60,12 +67,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGameStart }) => {
           >
             <span className="relative z-10 flex items-center gap-2">
               Start Game
-              <Star className="h-4 w-4 transition-all duration-300 group-hover:rotate-45" />
+              <Star className={`h-4 w-4 transition-all duration-500 ${isHovering ? 'animate-spin-slow' : ''}`} />
             </span>
-            <span className="absolute inset-0 w-full h-full bg-white dark:bg-purple-light opacity-0 group-hover:opacity-20 transition-opacity"></span>
+            <span className={`absolute inset-0 w-full h-full bg-white dark:bg-purple-light opacity-0 group-hover:opacity-20 transition-opacity ${isHovering ? 'opacity-10' : ''}`}></span>
           </Button>
         </CardContent>
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-icebreaker via-icebreaker-dark to-icebreaker dark:from-purple dark:via-purple-dark dark:to-purple"></div>
+        <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-icebreaker via-icebreaker-dark to-icebreaker dark:from-purple dark:via-purple-dark dark:to-purple transition-all duration-300 ${isHovering ? 'h-2' : ''}`}></div>
       </Card>
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8 relative z-10">
