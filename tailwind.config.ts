@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				display: ['Quicksand', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -117,6 +121,22 @@ export default {
 					'50%': { 
 						transform: 'translateY(-5px)'
 					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-5px)'
+					}
+				},
+				'spin-slow': {
+					'from': {
+						transform: 'rotate(0deg)'
+					},
+					'to': {
+						transform: 'rotate(360deg)'
+					}
 				}
 			},
 			animation: {
@@ -126,7 +146,13 @@ export default {
 				'fade-in-up': 'fade-in-up 0.6s ease-out',
 				'slide-in-right': 'slide-in-right 0.4s ease-out',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
-				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite'
+				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'spin-slow': 'spin-slow 6s linear infinite'
+			},
+			boxShadow: {
+				'glow': '0 0 15px 5px rgba(56, 189, 248, 0.3)',
+				'glow-purple': '0 0 15px 5px rgba(155, 135, 245, 0.3)'
 			}
 		}
 	},

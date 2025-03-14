@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -79,18 +79,28 @@
     height: 100%;
   }
 
+  h1, h2, h3, h4 {
+    font-family: 'Quicksand', sans-serif;
+  }
+
   body {
     @apply bg-background text-foreground;
     height: 100%;
     overflow-x: hidden;
-    background-image: radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.1), transparent),
-                      linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(240, 249, 255, 0.8));
+    background-image: 
+      radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.15), transparent 40%),
+      radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.1), transparent 30%),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(240, 249, 255, 0.8));
+    background-attachment: fixed;
   }
 
   body.dark {
     @apply bg-gray-900;
-    background-image: radial-gradient(circle at 80% 20%, rgba(155, 135, 245, 0.15), transparent),
-                      linear-gradient(to bottom, rgba(26, 31, 44, 0.95), rgba(22, 20, 29, 0.95));
+    background-image: 
+      radial-gradient(circle at 80% 20%, rgba(155, 135, 245, 0.2), transparent 40%),
+      radial-gradient(circle at 20% 80%, rgba(155, 135, 245, 0.15), transparent 30%),
+      linear-gradient(to bottom, rgba(26, 31, 44, 0.97), rgba(22, 20, 29, 0.98));
+    background-attachment: fixed;
   }
 
   #root {
@@ -171,6 +181,46 @@
 
 .theme-toggle:hover {
   @apply transform rotate-12;
+}
+
+/* Fun animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
 }
 
 /* Dark mode specific overrides */
